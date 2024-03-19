@@ -1,3 +1,0 @@
-SpaceX 10000 134.2
-Apple 542 120
-Microsoft 1000 1250.3
