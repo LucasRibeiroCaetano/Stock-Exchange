@@ -128,15 +128,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bolsa.c" />
+    <ClCompile Include="registry.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h" />
     <ClInclude Include="utils.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="empresas.txt" />
-    <Text Include="utilizadores.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,8 +1,9 @@
 #include <tchar.h>
 
-#define MAX_EMPRESAS 5
+#define N_EMPRESAS 5 // Máximo de ações em empresas diferentes que um utilizador pode ter (ex: Apple, Google, Microsoft, SpaceX, Facebook)
+#define MAX_EMPRESAS 30 // Máximo de empresas que pode haver no total
 #define STR_LEN 50
-#define MAX_USERS 20 // No máximo podemos ter 20 utilizadores
+#define MAX_USERS 20
 
 // Empresa
 typedef struct {
@@ -14,7 +15,7 @@ typedef struct {
 // Carteira de ações de um utilizador
 typedef struct {
     TCHAR username[STR_LEN];
-    Empresa empresas[MAX_EMPRESAS];
+    Empresa empresas[N_EMPRESAS];
 } CarteiraAcoes;
 
 // Utilizador
