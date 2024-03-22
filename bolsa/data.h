@@ -4,6 +4,7 @@
 #define MAX_EMPRESAS 30 // Máximo de empresas que pode haver no total
 #define STR_LEN 50
 #define MAX_USERS 20
+#define MAX_PARAM 5
 
 // Empresa
 typedef struct {

@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "data.h"
 
 
 void Abort(const TCHAR* message) {
@@ -24,4 +25,54 @@ void Abort(const TCHAR* message) {
     LocalFree(lpMsgBuf);
 
     exit(EXIT_FAILURE);
+}
+
+void limparConsola() {
+    system("cls");
+}
+
+int contaParametros(const TCHAR* linha) {
+    int contador = 0;
+    bool dentroDoParametro = false;
+
+    // Percorre cada caractere da linha
+    for (int i = 0; linha[i] != _T('\0'); i++) {
+        // Se encontrarmos um caractere não espaço em branco e não estamos dentro de um parâmetro, incrementamos o contador
+        if (linha[i] != _T(' ') && !dentroDoParametro) {
+            dentroDoParametro = true;
+            contador++;
+        }
+        // Se encontrarmos um espaço em branco, definimos dentroDoParametro como falso
+        else if (linha[i] == _T(' ')) {
+            dentroDoParametro = false;
+        }
+    }
+
+    if (contador == 0) {
+        _tprintf(_T("\n[ AVISO ] Número de parâmetros é 0.\n"));
+    }
+
+    return contador - 1;
+}
+
+void extrairParametros(int numParametros, const TCHAR* linha, TCHAR comando[], TCHAR parametros[][STR_LEN]) {
+    TCHAR* context;
+    TCHAR* token;
+
+    // Extrair o comando
+    token = _tcstok_s(linha, _T(" "), &context);
+    if (token != NULL) {
+        _tcscpy_s(comando, STR_LEN, token);
+    }
+
+    // Extrair os parâmetros
+    for (int i = 0; i < numParametros; i++) {
+        token = _tcstok_s(NULL, _T(" "), &context);
+        if (token != NULL) {
+            _tcscpy_s(parametros[i], STR_LEN, token);
+        }
+        else {
+            parametros[i][0] = _T('\0'); // Se não houver mais tokens, colocamos uma string vazia
+        }
+    }
 }

@@ -5,3 +5,4 @@
 
 
 void Abort(const TCHAR* message);
+void limparConsola();

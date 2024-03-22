@@ -25,3 +25,7 @@ void Abort(const TCHAR* message) {
 
     exit(EXIT_FAILURE);
 }
+
+void limparConsola() {
+    system("cls");
+}

@@ -25,6 +25,10 @@ int _tmain(int argc, TCHAR* argv[]) {
     // Variáveis independentes
     DWORD numUtilizadores = 0;
     TCHAR comando[STR_LEN];
+    TCHAR linha[STR_LEN];
+    DWORD nParam;
+    TCHAR param[MAX_PARAM][STR_LEN];
+
 
 #ifdef UNICODE 
     stdinReturn = _setmode(_fileno(stdin), _O_WTEXT);
@@ -39,6 +43,9 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (argc != 2) {
         Abort(_T("Sintaxe Errada -> bolsa <nome do ficheiro de texto dos utilizadores>\n"));
     }
+
+    // Limpar a consola
+    limparConsola();
 
     _tprintf_s(_T("\n*********************************************************\n"));
     _tprintf_s(_T("*                                                       *\n"));
@@ -75,12 +82,6 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
     }
 
-    // Ficheiro Empresas
-    else if (!_tcscmp(fileName, _T("empresas.txt"))) {
-
-
-    }
-
     // Ficheiro Inválido
     else
         Abort(_T("Ficheiro Inválido."));
@@ -111,13 +112,116 @@ int _tmain(int argc, TCHAR* argv[]) {
     while (1) {
         _tprintf(_T("Administrador> "));
 
-        // Recebe o comando do administrador
-        _tscanf_s(_T("%s"), comando, STR_LEN);
+        _fgetts(linha, STR_LEN, stdin);
 
+        // Obtém o tamanho do comando
+        size_t length = _tcslen(linha);
+
+        // Se o comando não estiver vazio truncar o \n
+        if (length > 0 && linha[length - 1] == '\n') {
+            linha[length - 1] = '\0';
+        }
+
+        nParam = contaParametros(linha);
+
+        // Repartir o comando e os parâmetros
+        extrairParametros(nParam, linha, comando, param);
+
+        if (!_tcsicmp(comando, _T("ajuda"))) {
+
+            if (nParam == 0) {
+                _tprintf_s(_T("\n*********************************************************\n\n"));
+                _tprintf(_T("Acrescentar uma empresa\n - addc <nome-empresa> <número-ações> <preço-ação>\n\n"));
+                _tprintf(_T("Ler as empresas de um ficheiro de texto\n - addf <nome-ficheiro>\n\n"));
+                _tprintf(_T("Listar todas as empresas\n - listc\n\n"));
+                _tprintf(_T("Redefinir custo das ações de uma empresa\n - stock <nome-empresa> <preço-ação>\n\n"));
+                _tprintf(_T("Listar utilizadores\n - users\n\n"));
+                _tprintf(_T("Pausar as operações de compra e venda\n - pause <número-segundos>\n\n"));
+                _tprintf(_T("Limpar a consola\n - limpar\n\n"));
+                _tprintf(_T("Encerrar a plataforma\n - close\n\n"));
+                _tprintf_s(_T("*********************************************************\n\n"));
+            }
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+        }
+
+        // Adicionar empresas por ficheiro
+        else if (!_tcsicmp(comando, _T("addf"))) {
+            if (nParam == 1) {
+
+                TCHAR nomeFich[STR_LEN];
+                TCHAR linhaFich[STR_LEN];
+                DWORD numEmpresas = 0;
+                _tcscpy_s(nomeFich, STR_LEN, param[1]);
+
+                // Abrir o ficheiro
+                if (_tfopen_s(&file, nomeFich, _T("r")) != 0 || file == NULL) {
+                    _tprintf(_T("Falha ao abrir o arquivo.\n"));
+                    return -1;
+                }
+
+                // Ler as empresas do ficheiro
+                while (numEmpresas < MAX_EMPRESAS && _fgetts(linhaFich, STR_LEN, file)) {
+                    TCHAR nome[STR_LEN];
+                    int num_acoes;
+                    float preco_acao;
+
+                    // Extrair informações da linha
+                    if (_stscanf_s(linhaFich, _T("%s %d %f"), nome, STR_LEN, &num_acoes, &preco_acao) != 3) {
+                        _tprintf(_T("Erro ao extrair informações da empresa do arquivo.\n"));
+                        fclose(file);
+                        return -1;
+                    }
+
+                    // Copiar as informações para a estrutura de dados
+                    _tcscpy_s(empresas[numEmpresas].nome, STR_LEN, nome);
+                    empresas[numEmpresas].num_acoes = num_acoes;
+                    empresas[numEmpresas].preco_acao = preco_acao;
+
+                    numEmpresas++;
+                }
+
+                fclose(file);
+
+                // Imprimir as empresas lidas
+                _tprintf(_T("Empresas lidas do arquivo:\n"));
+                for (int i = 0; i < numEmpresas; i++) {
+                    _tprintf(_T("Empresa %d:\n"), i + 1);
+                    _tprintf(_T("  - Nome: %s\n"), empresas[i].nome);
+                    _tprintf(_T("  - Número de ações: %d\n"), empresas[i].num_acoes);
+                    _tprintf(_T("  - Preço da ação: %.2f\n"), empresas[i].preco_acao);
+                }
+
+            }
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+
+        }
+
+
+
+        // Limpar a Consola
+        else if (!_tcsicmp(comando, _T("limpar"))) {
+
+            if(nParam == 0)
+                limparConsola();
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+        }
+            
         // Sair do programa
-        if (_tcsicmp(comando, _T("close")) == 0) {
-            _tprintf(_T("Encerrando o programa...\n"));
-            return 0;
+        else if (_tcsicmp(comando, _T("close")) == 0) {
+
+            if (nParam == 0) {
+                _tprintf(_T("\nEncerrando o programa...\n\n"));
+                return 0;
+            }
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+        }
+
+        else {
+            _tprintf(_T("\nComando não reconhecido... Escreva 'ajuda' para uma lista completa de comandos. \n\n"));
         }
     }
 
