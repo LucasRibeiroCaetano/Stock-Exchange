@@ -6,6 +6,8 @@
 #include "data.h"
 #include "utils.h"
 
+#include "registry.h"
+
 int _tmain(int argc, TCHAR* argv[]) {
 
     // Set Mode Verification
@@ -22,12 +24,17 @@ int _tmain(int argc, TCHAR* argv[]) {
     Utilizador utilizadores[MAX_USERS];
     Empresa empresas[MAX_EMPRESAS];
 
+    // Registry
+    DWORD nClientes;
+
     // Variáveis independentes
     DWORD numUtilizadores = 0;
     TCHAR comando[STR_LEN];
+    TCHAR linhaAUX[STR_LEN];
     TCHAR linha[STR_LEN];
     DWORD nParam;
     TCHAR param[MAX_PARAM][STR_LEN];
+    DWORD numEmpresas = 0;
 
 
 #ifdef UNICODE 
@@ -70,7 +77,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             float saldoTemp;
 
             if (_stscanf_s(line, _T("%s %s %f"), usernameTemp, STR_LEN, passwordTemp, STR_LEN, &saldoTemp) != 3) {
-                Abort(_T("Erro ao extrair username, password e/ou saldo do ficheiro."));
+                Abort(_T("Erro ao extrair username, password e/ou saldo do ficheiro.\n"));
             }
 
             // Copiar os valores para utilizadores[numUtilizadores]
@@ -99,12 +106,19 @@ int _tmain(int argc, TCHAR* argv[]) {
         _tprintf(_T("  - Saldo:    %.2f €\n\n"), utilizadores[i].saldo);
     }
 
-    _tprintf_s(_T("*********************************************************\n\n"));
+    _tprintf_s(_T("*********************************************************\n"));
 
+    // A chave NCLIENTES existe, vamos ler o valor
+    if (chaveExiste()) {
+        _tprintf_s(_T("\nChave NCLIENTES encontrada.\n"));
+        nClientes = obterValor();
 
-    // Vamos ler a registry e ver se existe ua chave NCLIENTES, se existir usar o valor 
-
-    // Se nao existir criamos uma key NCLIENTES com valor 5
+        _tprintf_s(_T("Valor NCLIENTES: %u\n\n"), nClientes);
+    }
+    else {
+        criarChave();
+        nClientes = 5;
+    }
 
     // Interface de gestão de comandos
     _tprintf(_T("Escreva 'ajuda' para uma lista completa de comandos.\n\n"));
@@ -112,20 +126,23 @@ int _tmain(int argc, TCHAR* argv[]) {
     while (1) {
         _tprintf(_T("Administrador> "));
 
-        _fgetts(linha, STR_LEN, stdin);
+        _fgetts(linhaAUX, STR_LEN, stdin);
 
         // Obtém o tamanho do comando
-        size_t length = _tcslen(linha);
+        size_t length = _tcslen(linhaAUX);
 
         // Se o comando não estiver vazio truncar o \n
-        if (length > 0 && linha[length - 1] == '\n') {
-            linha[length - 1] = '\0';
+        if (length > 0 && linhaAUX[length - 1] == '\n') {
+            linhaAUX[length - 1] = '\0';
         }
 
-        nParam = contaParametros(linha);
+        // linhaAUX irá ser alterado nas funções então copio o conteúdo para outra variável para guardar o input
+        _tcscpy_s(linha, STR_LEN, linhaAUX);
+
+        nParam = contaParametros(linhaAUX);
 
         // Repartir o comando e os parâmetros
-        extrairParametros(nParam, linha, comando, param);
+        extrairParametros(nParam, linhaAUX, comando, param);
 
         if (!_tcsicmp(comando, _T("ajuda"))) {
 
@@ -145,14 +162,58 @@ int _tmain(int argc, TCHAR* argv[]) {
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
         }
 
+        // Adicionar uma empresa
+        else if (!_tcsicmp(comando, _T("addc"))) {
+            if (nParam == 3) {
+
+                TCHAR nome[STR_LEN];
+                int num_acoes;
+                float preco_acao;
+
+                if (_stscanf_s(linha, _T("%*s %s %d %f"), nome, STR_LEN, &num_acoes, &preco_acao) != 3) {
+                    _tprintf(_T("Erro ao extrair informações da empresa do arquivo.\n"));
+                    fclose(file);
+                    return -1;
+                }
+
+                // Armazenar informações na estrutura
+                _tcscpy_s(empresas[numEmpresas].nome, STR_LEN, nome);
+                empresas[numEmpresas].num_acoes = num_acoes;
+                empresas[numEmpresas].preco_acao = preco_acao;
+
+                numEmpresas++;
+            }
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+
+        }
+
+        // Listar todas as empresas
+        else if (!_tcsicmp(comando, _T("listc"))) {
+            if (nParam == 0) {
+                // Imprimir as empresas lidas
+                _tprintf_s(_T("\n*********************************************************\n"));
+                _tprintf(_T("\nEmpresas lidas do arquivo:\n\n"));
+                for (int i = 0; i < numEmpresas; i++) {
+                    _tprintf(_T("Empresa %d:\n"), i + 1);
+                    _tprintf(_T("  - Nome: %s\n"), empresas[i].nome);
+                    _tprintf(_T("  - Número de ações: %u\n"), empresas[i].num_acoes);
+                    _tprintf(_T("  - Preço da ação: %.2f\n\n"), empresas[i].preco_acao);
+                }
+                _tprintf_s(_T("*********************************************************\n\n"));
+            }
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+
+        }
+
         // Adicionar empresas por ficheiro
         else if (!_tcsicmp(comando, _T("addf"))) {
             if (nParam == 1) {
 
                 TCHAR nomeFich[STR_LEN];
                 TCHAR linhaFich[STR_LEN];
-                DWORD numEmpresas = 0;
-                _tcscpy_s(nomeFich, STR_LEN, param[1]);
+                _tcscpy_s(nomeFich, STR_LEN, param[0]);
 
                 // Abrir o ficheiro
                 if (_tfopen_s(&file, nomeFich, _T("r")) != 0 || file == NULL) {
@@ -182,23 +243,11 @@ int _tmain(int argc, TCHAR* argv[]) {
                 }
 
                 fclose(file);
-
-                // Imprimir as empresas lidas
-                _tprintf(_T("Empresas lidas do arquivo:\n"));
-                for (int i = 0; i < numEmpresas; i++) {
-                    _tprintf(_T("Empresa %d:\n"), i + 1);
-                    _tprintf(_T("  - Nome: %s\n"), empresas[i].nome);
-                    _tprintf(_T("  - Número de ações: %d\n"), empresas[i].num_acoes);
-                    _tprintf(_T("  - Preço da ação: %.2f\n"), empresas[i].preco_acao);
-                }
-
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
 
         }
-
-
 
         // Limpar a Consola
         else if (!_tcsicmp(comando, _T("limpar"))) {

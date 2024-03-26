@@ -48,10 +48,6 @@ int contaParametros(const TCHAR* linha) {
         }
     }
 
-    if (contador == 0) {
-        _tprintf(_T("\n[ AVISO ] Número de parâmetros é 0.\n"));
-    }
-
     return contador - 1;
 }
 

@@ -32,5 +32,8 @@
     <ClInclude Include="utils.h">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
+    <ClInclude Include="registry.h">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
