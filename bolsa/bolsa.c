@@ -35,6 +35,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     DWORD nParam;
     TCHAR param[MAX_PARAM][STR_LEN];
     DWORD numEmpresas = 0;
+    DWORD nSegundos = 0; // Comando Pause
 
 
 #ifdef UNICODE 
@@ -84,6 +85,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             _tcscpy_s(utilizadores[numUtilizadores].username, STR_LEN, usernameTemp);
             _tcscpy_s(utilizadores[numUtilizadores].password, STR_LEN, passwordTemp);
             utilizadores[numUtilizadores].saldo = saldoTemp;
+            utilizadores[numUtilizadores].online = false;
 
             numUtilizadores++;
         }
@@ -94,19 +96,6 @@ int _tmain(int argc, TCHAR* argv[]) {
         Abort(_T("Ficheiro Inválido."));
 
     fclose(file);
-
-    _tprintf(_T("\n[ INFO ] Informação Lida do ficheiro de texto:\n\n"));
-
-    _tprintf_s(_T("*********************************************************\n\n"));
-
-    for (DWORD i = 0; i < numUtilizadores; i++) {
-        _tprintf(_T("Utilizador %d:\n"), i + 1);
-        _tprintf(_T("  - Username: %s\n"), utilizadores[i].username);
-        _tprintf(_T("  - Password: %s\n"), utilizadores[i].password);
-        _tprintf(_T("  - Saldo:    %.2f €\n\n"), utilizadores[i].saldo);
-    }
-
-    _tprintf_s(_T("*********************************************************\n"));
 
     // A chave NCLIENTES existe, vamos ler o valor
     if (chaveExiste()) {
@@ -188,25 +177,6 @@ int _tmain(int argc, TCHAR* argv[]) {
 
         }
 
-        // Listar todas as empresas
-        else if (!_tcsicmp(comando, _T("listc"))) {
-            if (nParam == 0) {
-                // Imprimir as empresas lidas
-                _tprintf_s(_T("\n*********************************************************\n"));
-                _tprintf(_T("\nEmpresas lidas do arquivo:\n\n"));
-                for (int i = 0; i < numEmpresas; i++) {
-                    _tprintf(_T("Empresa %d:\n"), i + 1);
-                    _tprintf(_T("  - Nome: %s\n"), empresas[i].nome);
-                    _tprintf(_T("  - Número de ações: %u\n"), empresas[i].num_acoes);
-                    _tprintf(_T("  - Preço da ação: %.2f\n\n"), empresas[i].preco_acao);
-                }
-                _tprintf_s(_T("*********************************************************\n\n"));
-            }
-            else
-                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
-
-        }
-
         // Adicionar empresas por ficheiro
         else if (!_tcsicmp(comando, _T("addf"))) {
             if (nParam == 1) {
@@ -247,6 +217,85 @@ int _tmain(int argc, TCHAR* argv[]) {
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
 
+        }
+
+        // Listar todas as empresas
+        else if (!_tcsicmp(comando, _T("listc"))) {
+            if (nParam == 0) {
+                
+                if (numEmpresas == 0)
+                    _tprintf_s(_T("\nNão existem empresas.\n\n"));
+
+                else {
+                    _tprintf_s(_T("\n*********************************************************\n"));
+                    _tprintf(_T("\nEmpresas lidas do arquivo:\n\n"));
+
+                    for (int i = 0; i < numEmpresas; i++) {
+                        _tprintf(_T("Empresa %d:\n"), i + 1);
+                        _tprintf(_T("  - Nome: %s\n"), empresas[i].nome);
+                        _tprintf(_T("  - Número de ações: %u\n"), empresas[i].num_acoes);
+                        _tprintf(_T("  - Preço da ação: %.2f\n\n"), empresas[i].preco_acao);
+                    }
+                    _tprintf_s(_T("*********************************************************\n\n"));
+                }
+
+            }
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+
+        }
+
+        // Redefinir custo das ações de uma empresa
+        else if (!_tcscmp(comando, _T("stock"))) {
+
+            if (nParam == 2) {
+
+                for (int i = 0; i < numEmpresas; i++) {
+                    if (!_tcscmp(empresas[i].nome, param[0])) {
+                        if (_stscanf_s(param[1], _T("%f"), &empresas[i].preco_acao) != 1) {
+                            Abort(_T("Erro na conversão string -> float."));
+                        }
+                    }
+                }
+            }
+
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+        }
+
+        // Listar Utilizadores
+        else if (!_tcsicmp(comando, _T("users"))) {
+
+            if (nParam == 0) {
+                _tprintf_s(_T("\n*********************************************************\n\n"));
+
+                for (DWORD i = 0; i < numUtilizadores; i++) {
+                    _tprintf(_T("%s %s:\n"), utilizadores[i].online ? _T("\033[32m\u25CF\033[0m") : _T("\033[31m\u25CF\033[0m"), utilizadores[i].username);
+                    _tprintf(_T("    Saldo:    %.2f €\n\n"), utilizadores[i].saldo);
+                }
+
+                _tprintf_s(_T("*********************************************************\n\n"));
+
+            }
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
+        }
+
+        // Pausar Operações
+        else if (!_tcsicmp(comando, _T("pause"))) {
+
+            if (nParam == 1) {
+
+                if (_stscanf_s(param[1], _T("%u"), &nSegundos) != 1) {
+                    Abort(_T("Erro na leitura de segundos."));
+                }
+
+                // Aciona uma flag que bloqueia todas as compras e vendas
+
+            }
+
+            else
+                _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
         }
 
         // Limpar a Consola
