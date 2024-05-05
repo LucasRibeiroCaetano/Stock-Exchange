@@ -27,3 +27,10 @@ typedef struct {
     float saldo;
     bool online;
 } Utilizador;
+
+// Última Transação
+typedef struct {
+    TCHAR nome[STR_LEN]; // Nome da empresa
+    int num_acoes; // Número de ações compradas
+    float preco_acao; // Preço ao qual as ações foram compradas
+} UltimaTransacao;
