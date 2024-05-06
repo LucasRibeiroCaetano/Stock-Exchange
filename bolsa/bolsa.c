@@ -141,23 +141,23 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     // Para todas as empresas
-    for (int i = 0; i < numEmpresas; i++) {
-        strcpy(pBuf->empresas[i].nome, empresas[i].nome);
+    for (DWORD i = 0; i < numEmpresas; i++) {
+        _tcscpy_s(pBuf->empresas[i].nome, STR_LEN, empresas[i].nome);
         pBuf->empresas[i].num_acoes = empresas[i].num_acoes;
         pBuf->empresas[i].preco_acao = empresas[i].preco_acao;
     }
 
     // Para todos os utilizadores
-    for (int i = 0; i < numUtilizadores; i++) {
-        strcpy(pBuf->utilizadores[0].username, utilizadores[i].username);
-        pBuf->utilizadores[0].saldo = utilizadores[i].saldo;
-        pBuf->utilizadores[0].online = utilizadores[i].online;
+    for (DWORD i = 0; i < numUtilizadores; i++) {
+        _tcscpy_s(pBuf->utilizadores[i].username, STR_LEN, utilizadores[i].username);
+        pBuf->utilizadores[i].saldo = utilizadores[i].saldo;
+        pBuf->utilizadores[i].online = utilizadores[i].online;
     }
 
     // Dummy Values -> Têm de ser substituídos quando uma transação é feita. 
     // Quando um utilizador pede uma transação de compra ou venda, o servidor regista essa nesta estrutura. 
     // Vai dando overwrite e fica sempre com a última transação.
-    strcpy(pBuf->ultimaTransacao.nome, "UltimaEmpresa");
+    _tcscpy_s(pBuf->ultimaTransacao.nome, STR_LEN, "UltimaEmpresa");
     pBuf->ultimaTransacao.num_acoes = 50;
     pBuf->ultimaTransacao.preco_acao = 15.75;
 
