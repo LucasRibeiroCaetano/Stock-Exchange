@@ -116,11 +116,11 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     // Criação de MP
     hMapFile = CreateFileMapping(
-        INVALID_HANDLE_VALUE,   
-        NULL,                   
-        PAGE_READWRITE,         
-        0,                      
-        SHARED_MEM_SIZE,     
+        INVALID_HANDLE_VALUE,
+        NULL,
+        PAGE_READWRITE,
+        0,
+        SHARED_MEM_SIZE,
         TEXT("SharedMemory")); // Nome do objeto de mapeamento
 
     if (hMapFile == NULL) {
@@ -142,23 +142,21 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     // Para todas as empresas
     for (int i = 0; i < numEmpresas; i++) {
-
         strcpy(pBuf->empresas[i].nome, empresas[i].nome);
         pBuf->empresas[i].num_acoes = empresas[i].num_acoes;
         pBuf->empresas[i].preco_acao = empresas[i].preco_acao;
-
     }
 
     // Para todos os utilizadores
     for (int i = 0; i < numUtilizadores; i++) {
-
         strcpy(pBuf->utilizadores[0].username, utilizadores[i].username);
         pBuf->utilizadores[0].saldo = utilizadores[i].saldo;
         pBuf->utilizadores[0].online = utilizadores[i].online;
-
     }
 
-    // Dummy Values -> Têm de ser substituídos quando uma transação é feita. Quando um utilizador pede uma transação de compra ou venda, o servidor regista essa nesta estrutura. Vai dando overwrite e fica sempre com a última transação.
+    // Dummy Values -> Têm de ser substituídos quando uma transação é feita. 
+    // Quando um utilizador pede uma transação de compra ou venda, o servidor regista essa nesta estrutura. 
+    // Vai dando overwrite e fica sempre com a última transação.
     strcpy(pBuf->ultimaTransacao.nome, "UltimaEmpresa");
     pBuf->ultimaTransacao.num_acoes = 50;
     pBuf->ultimaTransacao.preco_acao = 15.75;
