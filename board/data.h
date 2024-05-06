@@ -1,5 +1,8 @@
 #include <tchar.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
 
 #define N_EMPRESAS 5 // Máximo de ações em empresas diferentes que um utilizador pode ter (ex: Apple, Google, Microsoft, SpaceX, Facebook)
 #define MAX_EMPRESAS 30 // Máximo de empresas que pode haver no total
