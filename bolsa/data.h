@@ -6,6 +6,7 @@
 #define STR_LEN 50
 #define MAX_USERS 20
 #define MAX_PARAM 5
+#define SHARED_MEM_SIZE sizeof(SharedData)
 
 // Empresa
 typedef struct {
@@ -34,3 +35,10 @@ typedef struct {
     int num_acoes; // Número de ações compradas
     float preco_acao; // Preço ao qual as ações foram compradas
 } UltimaTransacao;
+
+// Memória Partilhada
+typedef struct {
+    Empresa empresas[MAX_EMPRESAS];
+    UltimaTransacao ultimaTransacao;
+    Utilizador utilizadores[MAX_USERS];
+} SharedData;
