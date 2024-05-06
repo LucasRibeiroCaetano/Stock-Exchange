@@ -38,6 +38,8 @@ typedef struct {
 
 // Memória Partilhada
 typedef struct {
+    DWORD numEmpresas;
+    DWORD numUtilizadores;
     Empresa empresas[MAX_EMPRESAS];
     UltimaTransacao ultimaTransacao;
     Utilizador utilizadores[MAX_USERS];

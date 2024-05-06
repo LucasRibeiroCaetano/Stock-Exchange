@@ -29,12 +29,12 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     // Variáveis independentes
     DWORD numUtilizadores = 0;
+    DWORD numEmpresas = 0;
     TCHAR comando[STR_LEN];
     TCHAR linhaAUX[STR_LEN];
     TCHAR linha[STR_LEN];
     DWORD nParam;
     TCHAR param[MAX_PARAM][STR_LEN];
-    DWORD numEmpresas = 0;
     DWORD nSegundos = 0; // Comando Pause
 
 
@@ -139,6 +139,9 @@ int _tmain(int argc, TCHAR* argv[]) {
         CloseHandle(hMapFile);
         return 1;
     }
+
+    pBuf->numEmpresas = numEmpresas;
+    pBuf->numUtilizadores = numUtilizadores;
 
     // Para todas as empresas
     for (DWORD i = 0; i < numEmpresas; i++) {
