@@ -26,3 +26,8 @@ void Abort(const TCHAR* message) {
 
     exit(EXIT_FAILURE);
 }
+
+// Função para imprimir uma mensagem com a parte "[INFO]" em ciano
+void MensagemInfo(const TCHAR* mensagem) {
+    _tprintf_s(_T("\033[36m[INFO]: \033[0m%s\n"), mensagem);
+}

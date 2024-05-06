@@ -57,7 +57,8 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     // Print data from the shared memory
-    printf("Empresas:\n");
+    _tprintf_s(_T("nEmpresas: %d\n"), pBuf->numEmpresas);
+    _tprintf_s(_T("Empresas:\n"));
     for (int i = 0; i < pBuf->numEmpresas; i++) {
         _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
             pBuf->empresas[i].nome,
@@ -65,7 +66,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             pBuf->empresas[i].preco_acao);
     }
 
-    printf("\nUtilizadores:\n");
+    _tprintf_s(_T("\nUtilizadores:\n"));
     for (int i = 0; i < pBuf->numUtilizadores; i++) {
         _tprintf_s(_T("Username: %s, Saldo: %.2f, Online: %d\n"),
             pBuf->utilizadores[i].username,
@@ -79,13 +80,10 @@ int _tmain(int argc, TCHAR* argv[]) {
         pBuf->ultimaTransacao.num_acoes,
         pBuf->ultimaTransacao.preco_acao);
 
-    // Unmap the shared memory
+
+    // Acabei de Ler, libertar os recursos da memória partilhada
     UnmapViewOfFile(pBuf);
-
-    // Close the handle to the shared memory
     CloseHandle(hMapFile);
-
-
 
 
 
@@ -125,7 +123,5 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 
 
-
-
-
+    return 0;
 }

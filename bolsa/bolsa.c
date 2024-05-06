@@ -7,6 +7,7 @@
 #include "utils.h"
 
 #include "registry.h"
+#include "eventos.h"
 
 int _tmain(int argc, TCHAR* argv[]) {
 
@@ -99,7 +100,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     // A chave NCLIENTES existe, vamos ler o valor
     if (chaveExiste()) {
-        _tprintf_s(_T("\nChave NCLIENTES encontrada.\n"));
+        MensagemInfo(_T("Chave NCLIENTES encontrada. "));
         nClientes = obterValor();
 
         _tprintf_s(_T("Valor NCLIENTES: %u\n\n"), nClientes);
@@ -163,12 +164,6 @@ int _tmain(int argc, TCHAR* argv[]) {
     _tcscpy_s(pBuf->ultimaTransacao.nome, STR_LEN, _T("UltimaEmpresa"));
     pBuf->ultimaTransacao.num_acoes = 50;
     pBuf->ultimaTransacao.preco_acao = 15.75;
-
-    // Unmap the shared memory
-    UnmapViewOfFile(pBuf);
-
-    // Close the handle to the shared memory
-    CloseHandle(hMapFile);
 
 
 
@@ -433,6 +428,9 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
     }
 
+    // Libertar os recursos da memória partilhada
+    UnmapViewOfFile(pBuf);
+    CloseHandle(hMapFile);
 
     return 0;
 }
