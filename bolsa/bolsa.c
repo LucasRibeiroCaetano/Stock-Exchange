@@ -109,6 +109,115 @@ int _tmain(int argc, TCHAR* argv[]) {
         nClientes = 5;
     }
 
+    //----------------------------------------------- MP -----------------------------------------------
+
+    HANDLE hMapFile; // Handle da MP
+    SharedData* pBuf; // Estrutura de dados onde é escrita a informação na MP
+
+    // Criação de MP
+    hMapFile = CreateFileMapping(
+        INVALID_HANDLE_VALUE,   
+        NULL,                   
+        PAGE_READWRITE,         
+        0,                      
+        SHARED_MEM_SIZE,     
+        TEXT("SharedMemory")); // Nome do objeto de mapeamento
+
+    if (hMapFile == NULL) {
+        printf("Could not create file mapping object (%d).\n", GetLastError());
+        return 1;
+    }
+
+    pBuf = (SharedData*)MapViewOfFile(hMapFile,   // Handle to map object
+        FILE_MAP_ALL_ACCESS,
+        0,
+        0,
+        SHARED_MEM_SIZE);
+
+    if (pBuf == NULL) {
+        printf("Could not map view of file (%d).\n", GetLastError());
+        CloseHandle(hMapFile);
+        return 1;
+    }
+
+    // Para todas as empresas
+    for (int i = 0; i < numEmpresas; i++) {
+
+        strcpy(pBuf->empresas[i].nome, empresas[i].nome);
+        pBuf->empresas[i].num_acoes = empresas[i].num_acoes;
+        pBuf->empresas[i].preco_acao = empresas[i].preco_acao;
+
+    }
+
+    // Para todos os utilizadores
+    for (int i = 0; i < numUtilizadores; i++) {
+
+        strcpy(pBuf->utilizadores[0].username, utilizadores[i].username);
+        pBuf->utilizadores[0].saldo = utilizadores[i].saldo;
+        pBuf->utilizadores[0].online = utilizadores[i].online;
+
+    }
+
+    // Dummy Values -> Têm de ser substituídos quando uma transação é feita. Quando um utilizador pede uma transação de compra ou venda, o servidor regista essa nesta estrutura. Vai dando overwrite e fica sempre com a última transação.
+    strcpy(pBuf->ultimaTransacao.nome, "UltimaEmpresa");
+    pBuf->ultimaTransacao.num_acoes = 50;
+    pBuf->ultimaTransacao.preco_acao = 15.75;
+
+    // Unmap the shared memory
+    UnmapViewOfFile(pBuf);
+
+    // Close the handle to the shared memory
+    CloseHandle(hMapFile);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //----------------------------------------------- MP -----------------------------------------------
+
     // Interface de gestão de comandos
     _tprintf(_T("Escreva 'ajuda' para uma lista completa de comandos.\n\n"));
 
