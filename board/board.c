@@ -8,9 +8,15 @@
 int _tmain(int argc, TCHAR* argv[]) {
 
     // Set Mode Verification
-    DWORD stdinReturn;
-    DWORD stdoutReturn;
-    DWORD stderrReturn;
+    DWORD stdinReturn = 0;
+    DWORD stdoutReturn = 0;
+    DWORD stderrReturn = 0;
+
+#ifdef UNICODE
+    stdinReturn = _setmode(_fileno(stdin), _O_WTEXT);
+    stdoutReturn = _setmode(_fileno(stdout), _O_WTEXT);
+    stderrReturn = _setmode(_fileno(stderr), _O_WTEXT);
+#endif
 
     // Verificação do Set Mode
     if (stdinReturn == -1 || stdoutReturn == -1 || stderrReturn == -1)
@@ -19,12 +25,6 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (argc != 2) {
         Abort(_T("Sintaxe Errada -> board <número de empresas>\n"));
     }
-
-#ifdef UNICODE 
-    stdinReturn = _setmode(_fileno(stdin), _O_WTEXT);
-    stdoutReturn = _setmode(_fileno(stdout), _O_WTEXT);
-    stderrReturn = _setmode(_fileno(stderr), _O_WTEXT);
-#endif
 
 
     //----------------------------------------------- MP -----------------------------------------------
@@ -39,7 +39,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     );
 
     if (hMapFile == NULL) {
-        printf("Could not open file mapping object (%d).\n", GetLastError());
+        Abort(_T("Não foi possível abrir o objecto de mapeamento de memória partilhada.\n"));
         return 1;
     }
 
@@ -51,15 +51,15 @@ int _tmain(int argc, TCHAR* argv[]) {
         0);
 
     if (pBuf == NULL) {
-        printf("Could not map view of file (%d).\n", GetLastError());
+        Abort(_T("Não foi possível mapear o ficheiro.\n"));
         CloseHandle(hMapFile);
         return 1;
     }
 
     // Print data from the shared memory
     printf("Empresas:\n");
-    for (int i = 0; i < MAX_EMPRESAS; i++) {
-        printf("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n",
+    for (int i = 0; i < pBuf->numEmpresas; i++) {
+        _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
             pBuf->empresas[i].nome,
             pBuf->empresas[i].num_acoes,
             pBuf->empresas[i].preco_acao);
@@ -67,14 +67,14 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     printf("\nUtilizadores:\n");
     for (int i = 0; i < pBuf->numUtilizadores; i++) {
-        printf("Username: %s, Saldo: %.2f, Online: %d\n",
+        _tprintf_s(_T("Username: %s, Saldo: %.2f, Online: %d\n"),
             pBuf->utilizadores[i].username,
             pBuf->utilizadores[i].saldo,
             pBuf->utilizadores[i].online);
     }
 
-    printf("\nÚltima Transação:\n");
-    printf("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n",
+    _tprintf_s(_T("\nÚltima Transação:\n"));
+    _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
         pBuf->ultimaTransacao.nome,
         pBuf->ultimaTransacao.num_acoes,
         pBuf->ultimaTransacao.preco_acao);
