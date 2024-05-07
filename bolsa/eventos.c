@@ -30,8 +30,7 @@ void AlternarEventoAtualizacao() {
     // Abrir o evento nomeado
     HANDLE hEventoAtualizacao = OpenEvent(EVENT_MODIFY_STATE, FALSE, UPDATE_EVENT_NAME);
     if (hEventoAtualizacao == NULL) {
-        // Falha ao abrir o evento nomeado
-        Abort(_T("Erro ao abrir o evento.\n"));
+        Abort(_T("Erro ao abrir o evento de atualização.\n"));
     }
 
     // Alternar o estado do evento nomeado
@@ -56,8 +55,7 @@ void AlternarEventoLeitura() {
     HANDLE hEventoLeitura = OpenEvent(EVENT_MODIFY_STATE, FALSE, READ_EVENT_NAME);
     if (hEventoLeitura == NULL) {
         // Falha ao abrir o evento nomeado
-        // Tratar o erro...
-        return;
+        Abort(_T("Erro abrir o evento de leitura.\n"));
     }
 
     // Alternar o estado do evento nomeado

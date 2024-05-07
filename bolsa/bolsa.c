@@ -142,7 +142,6 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     pBuf->numEmpresas = numEmpresas;
-    pBuf->numUtilizadores = numUtilizadores;
 
     // Para todas as empresas
     for (DWORD i = 0; i < numEmpresas; i++) {
@@ -151,12 +150,6 @@ int _tmain(int argc, TCHAR* argv[]) {
         pBuf->empresas[i].preco_acao = empresas[i].preco_acao;
     }
 
-    // Para todos os utilizadores
-    for (DWORD i = 0; i < numUtilizadores; i++) {
-        _tcscpy_s(pBuf->utilizadores[i].username, STR_LEN, utilizadores[i].username);
-        pBuf->utilizadores[i].saldo = utilizadores[i].saldo;
-        pBuf->utilizadores[i].online = utilizadores[i].online;
-    }
 
     // Dummy Values -> Têm de ser substituídos quando uma transação é feita. 
     // Quando um utilizador pede uma transação de compra ou venda, o servidor regista essa nesta estrutura. 
