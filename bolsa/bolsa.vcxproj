@@ -129,12 +129,14 @@
   <ItemGroup>
     <ClCompile Include="bolsa.c" />
     <ClCompile Include="eventos.c" />
+    <ClCompile Include="mp.c" />
     <ClCompile Include="registry.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h" />
     <ClInclude Include="eventos.h" />
+    <ClInclude Include="mp.h" />
     <ClInclude Include="registry.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

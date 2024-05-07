@@ -66,14 +66,6 @@ int _tmain(int argc, TCHAR* argv[]) {
             pBuf->empresas[i].preco_acao);
     }
 
-    _tprintf_s(_T("\nUtilizadores:\n"));
-    for (int i = 0; i < pBuf->numUtilizadores; i++) {
-        _tprintf_s(_T("Username: %s, Saldo: %.2f, Online: %d\n"),
-            pBuf->utilizadores[i].username,
-            pBuf->utilizadores[i].saldo,
-            pBuf->utilizadores[i].online);
-    }
-
     _tprintf_s(_T("\nÚltima Transação:\n"));
     _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
         pBuf->ultimaTransacao.nome,

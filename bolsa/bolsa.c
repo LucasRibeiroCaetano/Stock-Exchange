@@ -5,9 +5,9 @@
 
 #include "data.h"
 #include "utils.h"
-
 #include "registry.h"
 #include "eventos.h"
+#include "mp.h"
 
 int _tmain(int argc, TCHAR* argv[]) {
 
@@ -24,6 +24,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     // Estruturas de Dados
     Utilizador utilizadores[MAX_USERS];
     Empresa empresas[MAX_EMPRESAS];
+    UltimaTransacao ultimaTransacao;
 
     // Registry
     DWORD nClientes;
@@ -89,6 +90,8 @@ int _tmain(int argc, TCHAR* argv[]) {
             utilizadores[numUtilizadores].online = false;
 
             numUtilizadores++;
+
+            atualizarBoard()
         }
     }
 
@@ -269,6 +272,12 @@ int _tmain(int argc, TCHAR* argv[]) {
                 empresas[numEmpresas].preco_acao = preco_acao;
 
                 numEmpresas++;
+
+                // Dá toggle do evento de leitura
+                AlternarEventoLeitura();
+
+                // Atualiza a informação na MP
+                atualizarBoard(empresas, numEmpresas, ultimaTransacao);
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
