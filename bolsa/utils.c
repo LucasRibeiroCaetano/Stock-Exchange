@@ -75,5 +75,5 @@ void extrairParametros(int numParametros, const TCHAR* linha, TCHAR comando[], T
 
 // Função para imprimir uma mensagem com a parte "[INFO]" em ciano
 void MensagemInfo(const TCHAR* mensagem) {
-    _tprintf_s(_T("\n\n[\033[36mINFO\033[0m] %s"), mensagem);
+    _tprintf_s(_T("\n[\033[36mINFO\033[0m] %s"), mensagem);
 }

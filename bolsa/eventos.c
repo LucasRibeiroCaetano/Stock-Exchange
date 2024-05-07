@@ -8,17 +8,19 @@ void CriarEventos() {
     HANDLE hReadEvent = NULL;
 
     // Criação do evento de atualização
-    hUpdateEvent = CreateEvent(NULL, FALSE, FALSE, UPDATE_EVENT_NAME);
+    hUpdateEvent = CreateEvent(NULL, TRUE, FALSE, _T("NeedUpdate"));
     if (hUpdateEvent == NULL) {
         Abort(_T("Erro na Criação do evento de atualização.\n"));
     }
 
     // Criação do evento de leitura
-    hReadEvent = CreateEvent(NULL, TRUE, FALSE, READ_EVENT_NAME);
+    hReadEvent = CreateEvent(NULL, TRUE, FALSE, _T("CanRead"));
     if (hReadEvent == NULL) {
-        CloseHandle(hUpdateEvent); // Fecha o primeiro evento se o segundo falhar
+        CloseHandle(hUpdateEvent);
         Abort(_T("Erro na Criação do evento de leitura.\n"));
     }
+
+    MensagemInfo(_T("Eventos criados com sucesso.\n\n"));
 
     // Fechar os eventos, pois não serão usados diretamente nesta função
     CloseHandle(hUpdateEvent);
@@ -28,7 +30,7 @@ void CriarEventos() {
 // Função para alternar o estado do evento de atualização
 void AlternarEventoAtualizacao() {
     // Abrir o evento nomeado
-    HANDLE hEventoAtualizacao = OpenEvent(EVENT_MODIFY_STATE, FALSE, UPDATE_EVENT_NAME);
+    HANDLE hEventoAtualizacao = OpenEvent(EVENT_MODIFY_STATE, FALSE, _T("NeedUpdate"));
     if (hEventoAtualizacao == NULL) {
         Abort(_T("Erro ao abrir o evento de atualização.\n"));
     }
@@ -42,7 +44,7 @@ void AlternarEventoAtualizacao() {
     else {
         // O evento está atualmente assinalado, então redefinir para não assinalado
         ResetEvent(hEventoAtualizacao);
-        MensagemInfo(_T("Reset Evento NeedUpdate.\n"));
+        MensagemInfo(_T("Evento NeedUpdate desligado.\n"));
     }
 
     // Fechar a handle do evento nomeado
@@ -52,10 +54,10 @@ void AlternarEventoAtualizacao() {
 // Função para alternar o estado do evento de leitura
 void AlternarEventoLeitura() {
     // Abrir o evento nomeado
-    HANDLE hEventoLeitura = OpenEvent(EVENT_MODIFY_STATE, FALSE, READ_EVENT_NAME);
+    HANDLE hEventoLeitura = OpenEvent(EVENT_MODIFY_STATE, FALSE, _T("CanRead"));
     if (hEventoLeitura == NULL) {
         // Falha ao abrir o evento nomeado
-        Abort(_T("Erro abrir o evento de leitura.\n"));
+        Abort(_T("Erro ao abrir o evento de leitura.\n"));
     }
 
     // Alternar o estado do evento nomeado
@@ -67,7 +69,7 @@ void AlternarEventoLeitura() {
     else {
         // O evento está atualmente assinalado, então redefinir para não assinalado
         ResetEvent(hEventoLeitura);
-        MensagemInfo(_T("Reset Evento CanRead.\n"));
+        MensagemInfo(_T("Evento CanRead desligado.\n"));
     }
 
     // Fechar a handle do evento nomeado

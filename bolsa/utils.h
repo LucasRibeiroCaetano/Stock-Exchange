@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 
-
 void Abort(const TCHAR* message);
 void limparConsola();
 int contaParametros(const TCHAR* linha);

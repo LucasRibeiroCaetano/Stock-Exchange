@@ -3,11 +3,9 @@
 #include <fcntl.h>
 #include <io.h>
 
-#include "data.h"
-#include "utils.h"
 #include "registry.h"
 #include "eventos.h"
-#include "mp.h"
+#include "mp.h" // Inclui o data.h e o utils.h
 
 int _tmain(int argc, TCHAR* argv[]) {
 
@@ -25,6 +23,12 @@ int _tmain(int argc, TCHAR* argv[]) {
     Utilizador utilizadores[MAX_USERS];
     Empresa empresas[MAX_EMPRESAS];
     UltimaTransacao ultimaTransacao;
+
+    // Dummy Values
+    _tcscpy_s(ultimaTransacao.nome, STR_LEN, _T("Default"));
+    ultimaTransacao.num_acoes = 0;
+    ultimaTransacao.preco_acao = 0;
+
 
     // Registry
     DWORD nClientes;
@@ -90,8 +94,6 @@ int _tmain(int argc, TCHAR* argv[]) {
             utilizadores[numUtilizadores].online = false;
 
             numUtilizadores++;
-
-            atualizarBoard()
         }
     }
 
@@ -106,12 +108,14 @@ int _tmain(int argc, TCHAR* argv[]) {
         MensagemInfo(_T("Chave NCLIENTES encontrada. "));
         nClientes = obterValor();
 
-        _tprintf_s(_T("Valor NCLIENTES: %u\n\n"), nClientes);
+        _tprintf_s(_T("Valor NCLIENTES: %u"), nClientes);
     }
     else {
         criarChave();
         nClientes = 5;
     }
+
+    CriarEventos();
 
     //----------------------------------------------- MP -----------------------------------------------
 
@@ -317,6 +321,12 @@ int _tmain(int argc, TCHAR* argv[]) {
                     empresas[numEmpresas].preco_acao = preco_acao;
 
                     numEmpresas++;
+
+                    // Dá toggle do evento de leitura
+                    AlternarEventoAtualizacao();
+
+                    // Atualiza a informação na MP
+                    atualizarBoard(empresas, numEmpresas, ultimaTransacao);
                 }
 
                 fclose(file);
@@ -337,7 +347,7 @@ int _tmain(int argc, TCHAR* argv[]) {
                     _tprintf_s(_T("\n*********************************************************\n"));
                     _tprintf(_T("\nEmpresas lidas do arquivo:\n\n"));
 
-                    for (int i = 0; i < numEmpresas; i++) {
+                    for (DWORD i = 0; i < numEmpresas; i++) {
                         _tprintf(_T("Empresa %d:\n"), i + 1);
                         _tprintf(_T("  - Nome: %s\n"), empresas[i].nome);
                         _tprintf(_T("  - Número de ações: %u\n"), empresas[i].num_acoes);
@@ -357,7 +367,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
             if (nParam == 2) {
 
-                for (int i = 0; i < numEmpresas; i++) {
+                for (DWORD i = 0; i < numEmpresas; i++) {
                     if (!_tcscmp(empresas[i].nome, param[0])) {
                         if (_stscanf_s(param[1], _T("%f"), &empresas[i].preco_acao) != 1) {
                             Abort(_T("Erro na conversão string -> float."));
