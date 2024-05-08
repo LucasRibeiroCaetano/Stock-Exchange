@@ -71,7 +71,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         Abort(_T("Erro ao copiar o nome do arquivo.\n"));
     }
 
-    if (_tfopen_s(&file, fileName, _T("r")) != 0 || file == NULL) {
+    if (_tfopen_s(&file, fileName, _T("r, ccs=UTF-8")) != 0 || file == NULL) {
         Abort(_T("Falha ao abrir o ficheiro.\n"));
     }
 
