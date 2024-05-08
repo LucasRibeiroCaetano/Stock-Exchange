@@ -30,8 +30,6 @@ void atualizarBoard(Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultim
         Abort(_T("Não foi possível mapear o ficheiro.\n"));
     }
 
-
-
     for (DWORD i = 0; i < numEmpresas; i++) {
 
         _tcscpy_s(pBuf->empresas[i].nome, STR_LEN, empresas[i].nome);
