@@ -245,7 +245,7 @@ int _tmain(int argc, TCHAR* argv[]) {
                 _tcscpy_s(nomeFich, STR_LEN, param[0]);
 
                 // Abrir o ficheiro
-                if (_tfopen_s(&file, nomeFich, _T("r")) != 0 || file == NULL) {
+                if (_tfopen_s(&file, nomeFich, _T("r, ccs = UTF - 8")) != 0 || file == NULL) {
                     Abort(_T("Falha ao abrir o arquivo.\n"));
                 }
 
