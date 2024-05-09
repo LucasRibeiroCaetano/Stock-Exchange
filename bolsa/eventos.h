@@ -7,7 +7,13 @@
 #define UPDATE_EVENT_NAME _T("NeedUpdate")
 #define READ_EVENT_NAME _T("CanRead")
 
+// Handles dos eventos
+typedef struct {
+	HANDLE hUpdate;
+	HANDLE hRead;
+} Eventos;
 
-void CriarEventos();
-void AlternarEventoAtualizacao();
-void AlternarEventoLeitura();
+
+Eventos CriarEventos();
+void AlternarEventoAtualizacao(HANDLE hUpdate);
+void AlternarEventoLeitura(HANDLE hRead);

@@ -23,6 +23,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     Utilizador utilizadores[MAX_USERS];
     Empresa empresas[MAX_EMPRESAS];
     UltimaTransacao ultimaTransacao;
+    Eventos eventos;
 
     // Dummy Values
     _tcscpy_s(ultimaTransacao.nome, STR_LEN, _T("Default"));
@@ -115,15 +116,13 @@ int _tmain(int argc, TCHAR* argv[]) {
         nClientes = 5;
     }
 
-    CriarEventos();
+    eventos = CriarEventos();
 
     //----------------------------------------------- MP -----------------------------------------------
-
-    HANDLE hMapFile; // Handle da MP
-    SharedData* pBuf; // Estrutura de dados onde é escrita a informação na MP
+    MP mp;
 
     // Criação de MP
-    hMapFile = CreateFileMapping(
+    mp.hMapFile = CreateFileMapping(
         INVALID_HANDLE_VALUE,
         NULL,
         PAGE_READWRITE,
@@ -131,86 +130,36 @@ int _tmain(int argc, TCHAR* argv[]) {
         SHARED_MEM_SIZE,
         TEXT("SharedMemory")); // Nome do objeto de mapeamento
 
-    if (hMapFile == NULL) {
-        _tprintf_s(_T("Could not create file mapping object (%d).\n"), GetLastError());
-        return 1;
+    if (mp.hMapFile == NULL) {
+        Abort(_T("Could not create file mapping object.\n"));
     }
 
-    pBuf = (SharedData*)MapViewOfFile(hMapFile,   // Handle to map object
+    mp.pBuf = (SharedData*)MapViewOfFile(mp.hMapFile,   // Handle to map object
         FILE_MAP_ALL_ACCESS,
         0,
         0,
         SHARED_MEM_SIZE);
 
-    if (pBuf == NULL) {
-        _tprintf_s(_T("Could not map view of file (%d).\n"), GetLastError());
-        CloseHandle(hMapFile);
-        return 1;
+    if (mp.pBuf == NULL) {
+        CloseHandle(mp.hMapFile);
+        Abort(_T("Could not map view of file.\n"));
     }
 
-    pBuf->numEmpresas = numEmpresas;
+    mp.pBuf->numEmpresas = numEmpresas;
 
     // Para todas as empresas
     for (DWORD i = 0; i < numEmpresas; i++) {
-        _tcscpy_s(pBuf->empresas[i].nome, STR_LEN, empresas[i].nome);
-        pBuf->empresas[i].num_acoes = empresas[i].num_acoes;
-        pBuf->empresas[i].preco_acao = empresas[i].preco_acao;
+        _tcscpy_s(mp.pBuf->empresas[i].nome, STR_LEN, empresas[i].nome);
+        mp.pBuf->empresas[i].num_acoes = empresas[i].num_acoes;
+        mp.pBuf->empresas[i].preco_acao = empresas[i].preco_acao;
     }
-
 
     // Dummy Values -> Têm de ser substituídos quando uma transação é feita. 
     // Quando um utilizador pede uma transação de compra ou venda, o servidor regista essa nesta estrutura. 
     // Vai dando overwrite e fica sempre com a última transação.
-    _tcscpy_s(pBuf->ultimaTransacao.nome, STR_LEN, _T("UltimaEmpresa"));
-    pBuf->ultimaTransacao.num_acoes = 50;
-    pBuf->ultimaTransacao.preco_acao = 15.75;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    _tcscpy_s(mp.pBuf->ultimaTransacao.nome, STR_LEN, _T("UltimaEmpresa"));
+    mp.pBuf->ultimaTransacao.num_acoes = 50;
+    mp.pBuf->ultimaTransacao.preco_acao = 15.75;
 
     //----------------------------------------------- MP -----------------------------------------------
 
@@ -265,9 +214,8 @@ int _tmain(int argc, TCHAR* argv[]) {
                 float preco_acao;
 
                 if (_stscanf_s(linha, _T("%*s %s %d %f"), nome, STR_LEN, &num_acoes, &preco_acao) != 3) {
-                    _tprintf(_T("Erro ao extrair informações da empresa do arquivo.\n"));
                     fclose(file);
-                    return -1;
+                    Abort(_T("Erro ao extrair informações da empresa do arquivo.\n"));
                 }
 
                 // Armazenar informações na estrutura
@@ -277,11 +225,11 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 numEmpresas++;
 
-                // Dá toggle do evento de leitura
-                AlternarEventoLeitura();
-
                 // Atualiza a informação na MP
-                atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+                mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+
+                // Dá toggle do evento de leitura
+                AlternarEventoLeitura(eventos.hRead);
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
@@ -298,8 +246,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 // Abrir o ficheiro
                 if (_tfopen_s(&file, nomeFich, _T("r")) != 0 || file == NULL) {
-                    _tprintf(_T("Falha ao abrir o arquivo.\n"));
-                    return -1;
+                    Abort(_T("Falha ao abrir o arquivo.\n"));
                 }
 
                 // Ler as empresas do ficheiro
@@ -310,9 +257,8 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                     // Extrair informações da linha
                     if (_stscanf_s(linhaFich, _T("%s %d %f"), nome, STR_LEN, &num_acoes, &preco_acao) != 3) {
-                        _tprintf(_T("Erro ao extrair informações da empresa do arquivo.\n"));
                         fclose(file);
-                        return -1;
+                        Abort(_T("Erro ao extrair informações da empresa do arquivo.\n"));
                     }
 
                     // Copiar as informações para a estrutura de dados
@@ -322,11 +268,14 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                     numEmpresas++;
 
-                    // Dá toggle do evento de leitura
-                    AlternarEventoAtualizacao();
+                    // Na primeira inicialização do programa, o evento update vai estar sinalizado ou seja posso dar update. Depois no board quando ele ler a informação já pode ligar o evento update novamente.
+                    AlternarEventoAtualizacao(eventos.hUpdate);
 
                     // Atualiza a informação na MP
-                    atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+                    mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+
+                    // Informar que já é possível ler da mp
+                    AlternarEventoLeitura(eventos.hRead);
                 }
 
                 fclose(file);
@@ -440,9 +389,11 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
     }
 
-    // Libertar os recursos da memória partilhada
-    UnmapViewOfFile(pBuf);
-    CloseHandle(hMapFile);
+    // Libertar os recursos
+    UnmapViewOfFile(mp.pBuf);
+    CloseHandle(mp.hMapFile);
+    CloseHandle(eventos.hUpdate);
+    CloseHandle(eventos.hRead);
 
     return 0;
 }

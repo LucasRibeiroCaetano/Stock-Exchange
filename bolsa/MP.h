@@ -3,5 +3,11 @@
 #include "data.h"
 #include "utils.h"
 
+// Dados da MP
+typedef struct {
+	HANDLE hMapFile;
+	SharedData* pBuf;
+} MP;
 
-void atualizarBoard(Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultimaTransacao);
+
+MP atualizarBoard(Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultimaTransacao);
