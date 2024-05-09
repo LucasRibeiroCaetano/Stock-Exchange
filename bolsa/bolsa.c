@@ -225,11 +225,21 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 numEmpresas++;
 
-                // Atualiza a informação na MP
-                mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+                // Esperar até poder atualizar a informação
+                DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
 
-                // Dá toggle do evento de leitura
-                AlternarEventoLeitura(eventos.hRead);
+                if (result == WAIT_OBJECT_0) {
+                    mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+
+                    // Desligar o evento depois de utilizar
+                    AlternarEventoAtualizacao(eventos.hUpdate);
+                }
+                else {
+                    // Libertar os recursos
+                    //libertarRecursos(mp, eventos);
+
+                    Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
+                }
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
@@ -268,14 +278,21 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                     numEmpresas++;
 
-                    // Na primeira inicialização do programa, o evento update vai estar sinalizado ou seja posso dar update. Depois no board quando ele ler a informação já pode ligar o evento update novamente.
-                    AlternarEventoAtualizacao(eventos.hUpdate);
+                    // Esperar até poder atualizar a informação
+                    DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
 
-                    // Atualiza a informação na MP
-                    mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+                    if (result == WAIT_OBJECT_0) {
+                        mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
 
-                    // Informar que já é possível ler da mp
-                    AlternarEventoLeitura(eventos.hRead);
+                        // Desligar o evento depois de utilizar
+                        AlternarEventoAtualizacao(eventos.hUpdate);
+                    }
+                    else {
+                        // Libertar os recursos
+                        //libertarRecursos(mp, eventos);
+
+                        Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
+                    }
                 }
 
                 fclose(file);
@@ -390,10 +407,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     // Libertar os recursos
-    UnmapViewOfFile(mp.pBuf);
-    CloseHandle(mp.hMapFile);
-    CloseHandle(eventos.hUpdate);
-    CloseHandle(eventos.hRead);
+    //libertarRecursos(mp, eventos);
 
     return 0;
 }

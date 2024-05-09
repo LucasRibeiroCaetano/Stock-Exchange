@@ -9,8 +9,8 @@
 
 // Handles dos eventos
 typedef struct {
-	HANDLE hUpdate;
-	HANDLE hRead;
+    HANDLE hUpdate;
+    HANDLE hRead;
 } Eventos;
 
 

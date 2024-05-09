@@ -5,8 +5,8 @@
 
 // Dados da MP
 typedef struct {
-	HANDLE hMapFile;
-	SharedData* pBuf;
+    HANDLE hMapFile;
+    SharedData* pBuf;
 } MP;
 
 
