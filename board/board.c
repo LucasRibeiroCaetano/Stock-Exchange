@@ -28,91 +28,66 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 
     //----------------------------------------------- MP -----------------------------------------------
-    HANDLE hMapFile;
-    SharedData* pBuf;
+    MP mp;
+    Eventos eventos;
 
-    // Open the shared memory
-    hMapFile = OpenFileMapping(
-        FILE_MAP_ALL_ACCESS, // Read/write permission
-        FALSE,               // Do not inherit the name
-        TEXT("SharedMemory") // Name of the mapping object
-    );
-
-    if (hMapFile == NULL) {
-        Abort(_T("Não foi possível abrir o objecto de mapeamento de memória partilhada.\n"));
+    // Abre o evento de leitura para ver se já podemos ler
+    eventos.hRead = OpenEvent(EVENT_MODIFY_STATE, FALSE, _T("CanRead"));
+    if (eventos.hRead == NULL) {
+        // Handle error
+        printf("Failed to open the event. Error code: %d\n", GetLastError());
         return 1;
     }
 
-    // Map the shared memory into the process address space
-    pBuf = (SharedData*)MapViewOfFile(hMapFile,   // Handle to map object
-        FILE_MAP_ALL_ACCESS, // Read/write permission
-        0,
-        0,
-        0);
+    // Wait for the event to be signaled
+    DWORD result = WaitForSingleObject(eventos.hRead, INFINITE);
+    if (result == WAIT_OBJECT_0) {
 
-    if (pBuf == NULL) {
-        Abort(_T("Não foi possível mapear o ficheiro.\n"));
-        CloseHandle(hMapFile);
-        return 1;
+        // Podemos ler
+        mp.hMapFile = OpenFileMapping(
+            FILE_MAP_ALL_ACCESS, // Read/write permission
+            FALSE,               // Do not inherit the name
+            TEXT("SharedMemory") // Name of the mapping object
+        );
+
+        if (mp.hMapFile == NULL) {
+            Abort(_T("Não foi possível abrir o objecto de mapeamento de memória partilhada.\n"));
+        }
+
+        // Map the shared memory into the process address space
+        mp.pBuf = (SharedData*)MapViewOfFile(mp.hMapFile,   // Handle to map object
+            FILE_MAP_ALL_ACCESS, // Read/write permission
+            0,
+            0,
+            0);
+
+        if (mp.pBuf == NULL) {
+            CloseHandle(mp.hMapFile);
+            Abort(_T("Não foi possível mapear o ficheiro.\n"));
+        }
+    }
+    else {
+        Abort(_T("Erro ao esperar pelo evento.\n"));
     }
 
-    // Print data from the shared memory
-    _tprintf_s(_T("nEmpresas: %d\n"), pBuf->numEmpresas);
+    //----------------------------------------------- MP -----------------------------------------------
+
+
+    // Mostrar a informação lida
+    _tprintf_s(_T("nEmpresas: %d\n"), mp.pBuf->numEmpresas);
     _tprintf_s(_T("Empresas:\n"));
-    for (int i = 0; i < pBuf->numEmpresas; i++) {
+    for (int i = 0; i < mp.pBuf->numEmpresas; i++) {
         _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
-            pBuf->empresas[i].nome,
-            pBuf->empresas[i].num_acoes,
-            pBuf->empresas[i].preco_acao);
+            mp.pBuf->empresas[i].nome,
+            mp.pBuf->empresas[i].num_acoes,
+            mp.pBuf->empresas[i].preco_acao);
     }
 
     _tprintf_s(_T("\nÚltima Transação:\n"));
     _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
-        pBuf->ultimaTransacao.nome,
-        pBuf->ultimaTransacao.num_acoes,
-        pBuf->ultimaTransacao.preco_acao);
-
-
-    // Acabei de Ler, libertar os recursos da memória partilhada
-    UnmapViewOfFile(pBuf);
-    CloseHandle(hMapFile);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //----------------------------------------------- MP -----------------------------------------------
-
+        mp.pBuf->ultimaTransacao.nome,
+        mp.pBuf->ultimaTransacao.num_acoes,
+        mp.pBuf->ultimaTransacao.preco_acao);
 
 
     return 0;

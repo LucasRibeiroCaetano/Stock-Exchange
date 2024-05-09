@@ -45,3 +45,15 @@ typedef struct {
     Empresa empresas[MAX_EMPRESAS];
     UltimaTransacao ultimaTransacao;
 } SharedData;
+
+// Dados da MP
+typedef struct {
+    HANDLE hMapFile;
+    SharedData* pBuf;
+} MP;
+
+// Handles dos eventos
+typedef struct {
+    HANDLE hUpdate;
+    HANDLE hRead;
+} Eventos;
