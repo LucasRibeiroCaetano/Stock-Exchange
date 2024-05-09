@@ -258,7 +258,7 @@ int _tmain(int argc, TCHAR* argv[]) {
                 _tcscpy_s(nomeFich, STR_LEN, param[0]);
 
                 // Abrir o ficheiro
-                if (_tfopen_s(&file, nomeFich, _T("r, ccs = UTF - 8")) != 0 || file == NULL) {
+                if (_tfopen_s(&file, nomeFich, _T("r, ccs=UTF-8")) != 0 || file == NULL) {
                     Abort(_T("Falha ao abrir o arquivo.\n"));
                 }
 
@@ -281,27 +281,30 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                     numEmpresas++;
 
-                    // Esperar até poder atualizar a informação
-                    DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
-
-                    if (result == WAIT_OBJECT_0) {
-                        mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
-
-                        // Desligar o evento depois de utilizar
-                        AlternarEventoAtualizacao(eventos.hUpdate);
-                    }
-                    else {
-                        // Libertar Recursos
-                        UnmapViewOfFile(mp.pBuf);
-                        CloseHandle(mp.hMapFile);
-                        CloseHandle(eventos.hUpdate);
-                        CloseHandle(eventos.hRead);
-
-                        Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
-                    }
                 }
 
                 fclose(file);
+
+                MensagemInfo(_T("À espera para atualizar a informação"));
+
+                // Esperar até poder atualizar a informação
+                DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
+
+                if (result == WAIT_OBJECT_0) {
+                    mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+
+                    // Desligar o evento depois de utilizar
+                    ResetEvent(eventos.hUpdate);
+                }
+                else {
+                    // Libertar Recursos
+                    UnmapViewOfFile(mp.pBuf);
+                    CloseHandle(mp.hMapFile);
+                    CloseHandle(eventos.hUpdate);
+                    CloseHandle(eventos.hRead);
+
+                    Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
+                }
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
