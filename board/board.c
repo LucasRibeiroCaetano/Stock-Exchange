@@ -34,9 +34,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     // Abre o evento de leitura para ver se já podemos ler
     eventos.hRead = OpenEvent(EVENT_MODIFY_STATE, FALSE, _T("CanRead"));
     if (eventos.hRead == NULL) {
-        // Handle error
-        printf("Failed to open the event. Error code: %d\n", GetLastError());
-        return 1;
+        Abort("Erro ao abrir o evento.\n");
     }
 
     // Wait for the event to be signaled

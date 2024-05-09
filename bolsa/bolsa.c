@@ -236,6 +236,7 @@ int _tmain(int argc, TCHAR* argv[]) {
                 }
                 else {
                     // Libertar Recursos
+                    MensagemInfo(_T("A libertar recursos.\n"));
                     UnmapViewOfFile(mp.pBuf);
                     CloseHandle(mp.hMapFile);
                     CloseHandle(eventos.hUpdate);
@@ -295,9 +296,14 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                     // Desligar o evento depois de utilizar
                     ResetEvent(eventos.hUpdate);
+                    MensagemInfo(_T("Evento de atualização desligado.\n"));
+
+                    SetEvent(eventos.hRead);
+                    MensagemInfo(_T("Evento de leitura ligado.\n"));
                 }
                 else {
                     // Libertar Recursos
+                    MensagemInfo(_T("A libertar recursos.\n"));
                     UnmapViewOfFile(mp.pBuf);
                     CloseHandle(mp.hMapFile);
                     CloseHandle(eventos.hUpdate);
@@ -416,6 +422,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     // Libertar Recursos
+    MensagemInfo(_T("A libertar recursos.\n"));
     UnmapViewOfFile(mp.pBuf);
     CloseHandle(mp.hMapFile);
     CloseHandle(eventos.hUpdate);
