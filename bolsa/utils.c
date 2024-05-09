@@ -78,17 +78,3 @@ void MensagemInfo(const TCHAR* mensagem) {
     _tprintf_s(_T("\n[\033[36mINFO\033[0m] %s"), mensagem);
 }
 
-/*
-
-void libertarRecursos(MP mp, Eventos eventos) {
-    
-    // MP
-    UnmapViewOfFile(mp.pBuf);
-    CloseHandle(mp.hMapFile);
-    
-    // Eventos 
-    CloseHandle(eventos.hUpdate);
-    CloseHandle(eventos.hRead);
-}
-
-*/

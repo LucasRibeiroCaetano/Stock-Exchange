@@ -235,8 +235,11 @@ int _tmain(int argc, TCHAR* argv[]) {
                     AlternarEventoAtualizacao(eventos.hUpdate);
                 }
                 else {
-                    // Libertar os recursos
-                    //libertarRecursos(mp, eventos);
+                    // Libertar Recursos
+                    UnmapViewOfFile(mp.pBuf);
+                    CloseHandle(mp.hMapFile);
+                    CloseHandle(eventos.hUpdate);
+                    CloseHandle(eventos.hRead);
 
                     Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
                 }
@@ -288,8 +291,11 @@ int _tmain(int argc, TCHAR* argv[]) {
                         AlternarEventoAtualizacao(eventos.hUpdate);
                     }
                     else {
-                        // Libertar os recursos
-                        //libertarRecursos(mp, eventos);
+                        // Libertar Recursos
+                        UnmapViewOfFile(mp.pBuf);
+                        CloseHandle(mp.hMapFile);
+                        CloseHandle(eventos.hUpdate);
+                        CloseHandle(eventos.hRead);
 
                         Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
                     }
@@ -406,8 +412,11 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
     }
 
-    // Libertar os recursos
-    //libertarRecursos(mp, eventos);
+    // Libertar Recursos
+    UnmapViewOfFile(mp.pBuf);
+    CloseHandle(mp.hMapFile);
+    CloseHandle(eventos.hUpdate);
+    CloseHandle(eventos.hRead);
 
     return 0;
 }
