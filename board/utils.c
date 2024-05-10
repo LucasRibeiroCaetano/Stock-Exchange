@@ -31,3 +31,7 @@ void Abort(const TCHAR* message) {
 void MensagemInfo(const TCHAR* mensagem) {
     _tprintf_s(_T("\033[36m[INFO]: \033[0m%s\n"), mensagem);
 }
+
+void limparConsola() {
+    system("cls");
+}

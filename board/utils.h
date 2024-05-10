@@ -7,3 +7,4 @@
 
 void Abort(const TCHAR* message);
 void MensagemInfo(const TCHAR* mensagem);
+void limparConsola();

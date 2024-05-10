@@ -19,6 +19,6 @@ void atualizarBoard(MP mp, Empresa empresas[], DWORD numEmpresas, UltimaTransaca
     mp.pBuf->ultimaTransacao.num_acoes = ultimaTransacao.num_acoes;
     mp.pBuf->ultimaTransacao.preco_acao = ultimaTransacao.preco_acao;
 
-    MensagemInfo(_T("Atualização do board bem sucedida.\n\n"));
+    MensagemInfo(_T("Atualização do board bem sucedida."));
 }
 

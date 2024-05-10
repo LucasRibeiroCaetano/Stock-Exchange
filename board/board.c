@@ -26,6 +26,21 @@ int _tmain(int argc, TCHAR* argv[]) {
         Abort(_T("Sintaxe Errada -> board <número de empresas>\n"));
     }
 
+    // Guarda a variável N
+    DWORD N = strtoul(argv[1], NULL, 10);
+
+    if (N > 10)
+        Abort(_T("O parâmetro N tem de ser inferior ou igual a 10."));
+
+    // Limpar a consola
+    limparConsola();
+
+    _tprintf_s(_T("\n*********************************************************\n"));
+    _tprintf_s(_T("*                                                       *\n"));
+    _tprintf_s(_T("*                         Board                         *\n"));
+    _tprintf_s(_T("*                                                       *\n"));
+    _tprintf_s(_T("*********************************************************\n"));
+
 
     //----------------------------------------------- MP -----------------------------------------------
     MP mp;
@@ -75,12 +90,15 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     //----------------------------------------------- MP -----------------------------------------------
+    // Isto tem de ser feito infinitamente até a 
 
+    if (N > mp.pBuf->numEmpresas)
+        N = mp.pBuf->numEmpresas;
 
     // Mostrar a informação lida
     _tprintf_s(_T("nEmpresas: %d\n"), mp.pBuf->numEmpresas);
     _tprintf_s(_T("Empresas:\n"));
-    for (int i = 0; i < mp.pBuf->numEmpresas; i++) {
+    for (DWORD i = 0; i < N; i++) {
         _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
             mp.pBuf->empresas[i].nome,
             mp.pBuf->empresas[i].num_acoes,
