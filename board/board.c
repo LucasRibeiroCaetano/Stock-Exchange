@@ -32,7 +32,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     Eventos eventos;
 
     // Abre o evento de leitura para ver se já podemos ler
-    eventos.hRead = OpenEvent(EVENT_MODIFY_STATE, FALSE, _T("CanRead"));
+    eventos.hRead = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("CanRead"));
     if (eventos.hRead == NULL) {
         Abort("Erro ao abrir o evento.\n");
     }

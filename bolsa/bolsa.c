@@ -229,7 +229,7 @@ int _tmain(int argc, TCHAR* argv[]) {
                 DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
 
                 if (result == WAIT_OBJECT_0) {
-                    mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+                    atualizarBoard(mp, empresas, numEmpresas, ultimaTransacao);
                     ResetEvent(eventos.hUpdate);
                 }
                 else {
@@ -290,7 +290,7 @@ int _tmain(int argc, TCHAR* argv[]) {
                 DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
 
                 if (result == WAIT_OBJECT_0) {
-                    mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
+                    atualizarBoard(mp, empresas, numEmpresas, ultimaTransacao);
 
                     // Desligar o evento depois de utilizar
                     ResetEvent(eventos.hUpdate);

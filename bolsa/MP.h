@@ -10,4 +10,4 @@ typedef struct {
 } MP;
 
 
-MP atualizarBoard(Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultimaTransacao);
+void atualizarBoard(MP mp, Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultimaTransacao);

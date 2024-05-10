@@ -3,31 +3,9 @@
 #define mpName TEXT("SharedMemory")
 
 
-MP atualizarBoard(Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultimaTransacao) {
+void atualizarBoard(MP mp, Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultimaTransacao) {
 
-    MP mp;
-
-    // Abrir a memória partilhada
-    mp.hMapFile = OpenFileMapping(
-        FILE_MAP_ALL_ACCESS,
-        FALSE,
-        mpName
-    );
-
-    if (mp.hMapFile == NULL || mp.hMapFile == 0) {
-        Abort(_T("Não foi possível abrir o objecto de mapeamento de memória partilhada.\n"));
-    }
-
-    mp.pBuf = (SharedData*)MapViewOfFile(mp.hMapFile,
-        FILE_MAP_ALL_ACCESS,
-        0,
-        0,
-        0);
-
-    if (mp.pBuf == NULL) {
-        CloseHandle(mp.hMapFile);
-        Abort(_T("Não foi possível mapear o ficheiro.\n"));
-    }
+    mp.pBuf->numEmpresas = numEmpresas;
 
     for (DWORD i = 0; i < numEmpresas; i++) {
 
@@ -41,8 +19,6 @@ MP atualizarBoard(Empresa empresas[], DWORD numEmpresas, UltimaTransacao ultimaT
     mp.pBuf->ultimaTransacao.num_acoes = ultimaTransacao.num_acoes;
     mp.pBuf->ultimaTransacao.preco_acao = ultimaTransacao.preco_acao;
 
-    MensagemInfo(_T("Atualização do board bem sucedida."));
-
-    return mp;
+    MensagemInfo(_T("Atualização do board bem sucedida.\n\n"));
 }
 
