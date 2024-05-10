@@ -294,10 +294,10 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                     // Desligar o evento depois de utilizar
                     ResetEvent(eventos.hUpdate);
-                    MensagemInfo(_T("Evento de atualização desligado.\n"));
+                    MensagemInfo(_T("Evento de atualização desligado."));
 
                     SetEvent(eventos.hRead);
-                    MensagemInfo(_T("Evento de leitura ligado.\n"));
+                    MensagemInfo(_T("Evento de leitura ligado.\n\n"));
                 }
                 else {
                     // Libertar Recursos

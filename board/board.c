@@ -64,6 +64,12 @@ int _tmain(int argc, TCHAR* argv[]) {
             Abort(_T("Não foi possível mapear o ficheiro.\n"));
         }
     }
+    else if (result == WAIT_ABANDONED) {
+        Abort(_T("[WAIT_ABANDONED]: Erro ao esperar pelo evento.\n"));
+    }
+    else if (result == WAIT_TIMEOUT) {
+        Abort(_T("[WAIT_TIMEOUT]: Erro ao esperar pelo evento.\n"));
+    }
     else {
         Abort(_T("Erro ao esperar pelo evento.\n"));
     }
@@ -90,3 +96,4 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     return 0;
 }
+
