@@ -230,9 +230,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 if (result == WAIT_OBJECT_0) {
                     mp = atualizarBoard(empresas, numEmpresas, ultimaTransacao);
-
-                    // Desligar o evento depois de utilizar
-                    AlternarEventoAtualizacao(eventos.hUpdate);
+                    ResetEvent(eventos.hUpdate);
                 }
                 else {
                     // Libertar Recursos
