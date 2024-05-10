@@ -28,12 +28,15 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     // Guarda a variável N
     DWORD N = strtoul(argv[1], NULL, 10);
+    _tprintf_s(_T("Conversão |%s|-|%u|"), argv[1], N);
+
+
 
     if (N > 10)
         Abort(_T("O parâmetro N tem de ser inferior ou igual a 10."));
 
     // Limpar a consola
-    limparConsola();
+    //limparConsola();
 
     _tprintf_s(_T("\n*********************************************************\n"));
     _tprintf_s(_T("*                                                       *\n"));
@@ -96,7 +99,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         N = mp.pBuf->numEmpresas;
 
     // Mostrar a informação lida
-    _tprintf_s(_T("nEmpresas: %d\n"), mp.pBuf->numEmpresas);
+    _tprintf_s(_T("nEmpresas: %d,N = %u\n"), mp.pBuf->numEmpresas, N);
     _tprintf_s(_T("Empresas:\n"));
     for (DWORD i = 0; i < N; i++) {
         _tprintf_s(_T("Nome: %s, Número de ações: %d, Preço da ação: %.2f\n"),
