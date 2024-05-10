@@ -22,35 +22,3 @@ Eventos CriarEventos() {
 
     return eventos;
 }
-
-// Função para alternar o estado do evento de atualização
-void AlternarEventoAtualizacao(HANDLE hUpdate) {
-
-    // Alternar o estado do evento nomeado
-    if (WaitForSingleObject(hUpdate, 0) == WAIT_TIMEOUT) {
-        // O evento está atualmente não assinalado, então definir para assinalado
-        SetEvent(hUpdate);
-        MensagemInfo(_T("Evento NeedUpdate ligado.\n"));
-    }
-    else {
-        // O evento está atualmente assinalado, então redefinir para não assinalado
-        ResetEvent(hUpdate);
-        MensagemInfo(_T("Evento NeedUpdate desligado.\n"));
-    }
-}
-
-// Função para alternar o estado do evento de leitura
-void AlternarEventoLeitura(HANDLE hRead) {
-
-    // Alternar o estado do evento nomeado
-    if (WaitForSingleObject(hRead, 0) == WAIT_TIMEOUT) {
-        // O evento está atualmente não assinalado, então definir para assinalado
-        SetEvent(hRead);
-        MensagemInfo(_T("Evento CanRead ligado.\n"));
-    }
-    else {
-        // O evento está atualmente assinalado, então redefinir para não assinalado
-        ResetEvent(hRead);
-        MensagemInfo(_T("Evento CanRead desligado.\n"));
-    }
-}
