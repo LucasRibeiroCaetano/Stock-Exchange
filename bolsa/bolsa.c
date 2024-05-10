@@ -164,10 +164,10 @@ int _tmain(int argc, TCHAR* argv[]) {
     //----------------------------------------------- MP -----------------------------------------------
 
     // Interface de gestão de comandos
-    _tprintf(_T("Escreva 'ajuda' para uma lista completa de comandos.\n\n"));
+    _tprintf(_T("Escreva 'ajuda' para uma lista completa de comandos."));
 
     while (1) {
-        _tprintf(_T("Administrador> "));
+        _tprintf(_T("\n\nAdministrador> "));
 
         _fgetts(linhaAUX, STR_LEN, stdin);
 
@@ -226,11 +226,15 @@ int _tmain(int argc, TCHAR* argv[]) {
                 numEmpresas++;
 
                 // Esperar até poder atualizar a informação
+                MensagemInfo(_T("À espera para atualizar a informação..."));
                 DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
 
                 if (result == WAIT_OBJECT_0) {
                     atualizarBoard(mp, empresas, numEmpresas, ultimaTransacao);
                     ResetEvent(eventos.hUpdate);
+                    MensagemInfo(_T("Evento de atualização desligado."));
+                    SetEvent(eventos.hRead);
+                    MensagemInfo(_T("Evento de leitura ligado."));
                 }
                 else {
                     // Libertar Recursos
@@ -284,7 +288,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 fclose(file);
 
-                MensagemInfo(_T("À espera para atualizar a informação"));
+                MensagemInfo(_T("À espera para atualizar a informação..."));
 
                 // Esperar até poder atualizar a informação
                 DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
@@ -297,7 +301,7 @@ int _tmain(int argc, TCHAR* argv[]) {
                     MensagemInfo(_T("Evento de atualização desligado."));
 
                     SetEvent(eventos.hRead);
-                    MensagemInfo(_T("Evento de leitura ligado.\n\n"));
+                    MensagemInfo(_T("Evento de leitura ligado."));
                 }
                 else {
                     // Libertar Recursos
@@ -324,7 +328,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 else {
                     _tprintf_s(_T("\n*********************************************************\n"));
-                    _tprintf(_T("\nEmpresas lidas do arquivo:\n\n"));
+                    _tprintf(_T("\nLista de Empresas:\n\n"));
 
                     for (DWORD i = 0; i < numEmpresas; i++) {
                         _tprintf(_T("Empresa %d:\n"), i + 1);
