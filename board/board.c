@@ -20,7 +20,7 @@ int compare(const void* a, const void* b) {
 int _tmain(int argc, TCHAR* argv[]) {
 
     // Argumento
-    DWORD N;
+    DWORD N, initialN;
 
     // Set Mode Verification
     DWORD stdinReturn = 0;
@@ -48,8 +48,10 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 
 
-    if (N > 10 || N < 1)
-        Abort(_T("O parâmetro N tem de estar entre 1 e 10.\n"));
+    if (N < 1)
+        Abort(_T("O parâmetro N tem de ser maior ou igual a 1.\n"));
+
+    initialN = N;
 
     // Limpar a consola
     limparConsola();
@@ -71,15 +73,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         Abort("Erro ao abrir o evento.\n");
     }
 
-    // Abre o evento de atualização para informar o servidor de quando pode atualizar
-    eventos.hUpdate = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("NeedUpdate"));
-    if (eventos.hUpdate == NULL) {
-        Abort("Erro ao abrir o evento.\n");
-    }
-
     while (true) {
-
-        MensagemInfo(_T("À espera para atualizar a informação..."));
         // Wait for the event to be signaled
         result = WaitForSingleObject(eventos.hRead, INFINITE);
 
@@ -118,8 +112,12 @@ int _tmain(int argc, TCHAR* argv[]) {
             Abort(_T("Erro ao esperar pelo evento.\n"));
         }
 
-        if (N > mp.pBuf->numEmpresas)
+        if (mp.pBuf->numEmpresas < initialN) {
             N = mp.pBuf->numEmpresas;
+        }
+        else if (mp.pBuf->numEmpresas >= initialN) {
+            N = initialN;
+        }
 
         // Isto tem de ser feito infinitamente até a 
 
@@ -132,7 +130,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         _tprintf_s(_T("*                                                       *\n"));
         _tprintf_s(_T("*********************************************************\n"));
 
-        _tprintf_s(_T("\nTop %lu Empresas\n\n"), N);
+        _tprintf_s(_T("\nTop %lu Empresas - Ações mais Valiosas\n\n"), initialN);
 
         // Ordena as empresas pelo valor das ações
         qsort(mp.pBuf->empresas, sizeof(mp.pBuf->empresas) / sizeof(mp.pBuf->empresas[0]), sizeof(mp.pBuf->empresas[0]), compare);
@@ -146,16 +144,6 @@ int _tmain(int argc, TCHAR* argv[]) {
             mp.pBuf->ultimaTransacao.nome,
             mp.pBuf->ultimaTransacao.num_acoes,
             mp.pBuf->ultimaTransacao.preco_acao);
-        
-        // Informa que o servidor já pode enviar informação atualizada
-        SetEvent(eventos.hUpdate);
-
-        MensagemInfo(_T("Evento de atualização ligado."));
-
-        // Vamos esperar até poder ler outra vez
-        ResetEvent(eventos.hRead);
-
-        MensagemInfo(_T("Evento de leitura desligado."));
     }
 
     return 0;

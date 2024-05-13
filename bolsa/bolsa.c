@@ -225,27 +225,14 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 numEmpresas++;
 
-                // Esperar até poder atualizar a informação
-                MensagemInfo(_T("À espera para atualizar a informação..."));
-                DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
+                MensagemInfo(_T("A atualizar a informação..."));
 
-                if (result == WAIT_OBJECT_0) {
-                    atualizarBoard(mp, empresas, numEmpresas, ultimaTransacao);
-                    ResetEvent(eventos.hUpdate);
-                    MensagemInfo(_T("Evento de atualização desligado."));
-                    SetEvent(eventos.hRead);
-                    MensagemInfo(_T("Evento de leitura ligado."));
-                }
-                else {
-                    // Libertar Recursos
-                    MensagemInfo(_T("A libertar recursos.\n"));
-                    UnmapViewOfFile(mp.pBuf);
-                    CloseHandle(mp.hMapFile);
-                    CloseHandle(eventos.hUpdate);
-                    CloseHandle(eventos.hRead);
+                atualizarBoard(mp, empresas, numEmpresas, ultimaTransacao);
 
-                    Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
-                }
+                SetEvent(eventos.hRead);
+                MensagemInfo(_T("Evento de leitura ligado."));
+                ResetEvent(eventos.hRead);
+                MensagemInfo(_T("Evento de leitura desligado."));
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
@@ -288,31 +275,14 @@ int _tmain(int argc, TCHAR* argv[]) {
 
                 fclose(file);
 
-                MensagemInfo(_T("À espera para atualizar a informação..."));
+                MensagemInfo(_T("A atualizar a informação..."));
 
-                // Esperar até poder atualizar a informação
-                DWORD result = WaitForSingleObject(eventos.hUpdate, INFINITE);
+                atualizarBoard(mp, empresas, numEmpresas, ultimaTransacao);
 
-                if (result == WAIT_OBJECT_0) {
-                    atualizarBoard(mp, empresas, numEmpresas, ultimaTransacao);
-
-                    // Desligar o evento depois de utilizar
-                    ResetEvent(eventos.hUpdate);
-                    MensagemInfo(_T("Evento de atualização desligado."));
-
-                    SetEvent(eventos.hRead);
-                    MensagemInfo(_T("Evento de leitura ligado."));
-                }
-                else {
-                    // Libertar Recursos
-                    MensagemInfo(_T("A libertar recursos.\n"));
-                    UnmapViewOfFile(mp.pBuf);
-                    CloseHandle(mp.hMapFile);
-                    CloseHandle(eventos.hUpdate);
-                    CloseHandle(eventos.hRead);
-
-                    Abort(_T("Ocorreu um erro ao esperar pelo evento de atualização.\n"));
-                }
+                SetEvent(eventos.hRead);
+                MensagemInfo(_T("Evento de leitura ligado."));
+                ResetEvent(eventos.hRead);
+                MensagemInfo(_T("Evento de leitura desligado."));
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
@@ -427,7 +397,6 @@ int _tmain(int argc, TCHAR* argv[]) {
     MensagemInfo(_T("A libertar recursos.\n"));
     UnmapViewOfFile(mp.pBuf);
     CloseHandle(mp.hMapFile);
-    CloseHandle(eventos.hUpdate);
     CloseHandle(eventos.hRead);
 
     return 0;
