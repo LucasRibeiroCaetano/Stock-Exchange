@@ -66,23 +66,18 @@ typedef struct {
 
     // Dados
     TCHAR activeUser[STR_LEN]; // username do utilizador online
-    Empresa* empresas;
-    Utilizador* utilizadores;
-    DWORD numUtilizadores;
-    DWORD numEmpresas;
-    CarteiraAcoes* carteiras;
-    UltimaTransacao ultimaTransacao;
 } DataClientes;
 
 // Dados para a thread dos comandos do admin
 typedef struct {
-    HANDLE hPipe[MAX_USERS];
+    HANDLE hPipes[MAX_USERS];
     HANDLE hThreads[MAX_USERS];
     Empresa* empresas;
     DWORD numEmpresas;
     UltimaTransacao ultimaTransacao;
     Eventos eventos;
     Utilizador* utilizadores;
+    CarteiraAcoes* carteiras;
     DWORD numUtilizadores;
     struct MP mp;
 

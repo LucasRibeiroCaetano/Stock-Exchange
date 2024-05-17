@@ -47,6 +47,8 @@ int _tmain(int argc, TCHAR* argv[]) {
     DWORD nParam;
     TCHAR param[MAX_PARAM][STR_LEN];
     DWORD nSegundos = 0; // Comando Pause
+    DWORD pos = 0;
+    DWORD numPipes;
 
 
 
@@ -169,6 +171,8 @@ int _tmain(int argc, TCHAR* argv[]) {
     //----------------------------------------------- MP -----------------------------------------------
 
     //----------------------------------------------- Threads ------------------------------------------
+    
+    numPipes = nClientes;
 
     // Inicializar as estruturas
     dataAdmin.empresas = empresas;
@@ -178,23 +182,55 @@ int _tmain(int argc, TCHAR* argv[]) {
     dataAdmin.numUtilizadores = numUtilizadores;
     dataAdmin.ultimaTransacao = ultimaTransacao;
     dataAdmin.mp = mp;
-
-    dataAdmin.dataClientes.numEmpresas = numEmpresas;
-    dataAdmin.dataClientes.numUtilizadores = numUtilizadores;
-    dataAdmin.dataClientes.empresas = empresas;
-    dataAdmin.dataClientes.utilizadores = utilizadores;
-    dataAdmin.dataClientes.carteiras = carteiras;
+    inicializaPipes(dataAdmin.hPipes, numPipes);
     _tcscpy_s(dataAdmin.dataClientes.activeUser, STR_LEN, _T(""));
 
-
+    // Thread comandos bolsa
     HANDLE hThreadComandos = CreateThread(NULL, 0, ComandosThread, &dataAdmin, 0, NULL);
     if (hThreadComandos == NULL) {
         Abort(_T("Erro ao criar a thread do administrador."));
     }
 
-    HANDLE hThreadPrincipal = CreateThread(NULL, 0, ThreadPrincipal, &dataAdmin, 0, NULL);
-    if (hThreadPrincipal == NULL) {
-        Abort(_T("Erro ao criar a thread dos clientes."));
+    while (true) {
+
+        // Criação do named pipe
+        hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
+        if (hPipe == INVALID_HANDLE_VALUE) {
+            MensagemInfo(_T("Número máximo de clientes atingido.\n"));
+        }
+
+        if (!ConnectNamedPipe(hPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED) {
+            CloseHandle(hPipe);
+            Abort(_T("ConnectNamedPipe failed.\n"));
+        }
+
+        
+
+        _tprintf_s(_T("\n1\n"));
+
+        pos = getPipe(dataAdmin.hPipes, numPipes);
+
+        _tprintf_s(_T("\n2\n"));
+
+        dataAdmin.dataClientes.idPipe = pos;
+
+        _tprintf_s(_T("\n3\n"));
+
+        dataAdmin.hPipes[pos] = hPipe; // quando se desligar faço isto = NULL
+
+        _tprintf_s(_T("\n4\n"));
+
+        dataAdmin.hThreads[pos] = CreateThread(NULL, 0, ClientesThread, &dataAdmin, 0, NULL);
+
+        _tprintf_s(_T("\n5\n"));
+
+        if (dataAdmin.hThreads[pos] == NULL) {
+            CloseHandle(dataAdmin.hPipes[pos]);
+            Abort(_T("CreateThread failed.\n"));
+        }
+
+        MensagemInfo(_T("Novo cliente conectado."));
+
     }
     //----------------------------------------------- Threads ------------------------------------------
 

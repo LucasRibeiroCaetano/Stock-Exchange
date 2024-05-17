@@ -77,50 +77,6 @@ void MensagemInfo(const TCHAR* mensagem) {
     _tprintf_s(_T("\n[\033[36mINFO\033[0m] %s"), mensagem);
 }
 
-// Thread principal que cria os pipes e cria as threads para os clientes
-DWORD WINAPI ThreadPrincipal(LPVOID lpParam) {
-
-    DataAdmin* dataAdmin = (DataAdmin*)lpParam;
-    HANDLE hPipe;
-
-    DWORD pos = 0;
-
-    while (true) {
-
-        // Fazer uma funçãp para encontrar a posição vazia do array de handles de pipes (se for null)
-        // pos = função()
-        // Criação do named pipe
-        hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
-        if (hPipe == INVALID_HANDLE_VALUE) {
-            MensagemInfo(_T("Número máximo de clientes atingido.\n"));
-        }
-
-        if (!ConnectNamedPipe(hPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED) {
-            CloseHandle(hPipe);
-            Abort(_T("ConnectNamedPipe failed.\n"));
-        }
-
-        // Encontrar posição vaga na tabela == NULL na tabela dataAdmin->hPipe = pos
-        dataAdmin->dataClientes.idPipe = pos;
-        dataAdmin->hPipe[pos] = hPipe; // quando se desligar faço isto = NULL
-
-        // Fazer o mesmo para o semáforo
-        // dataCliente.hSem = 
-
-        // 
-        dataAdmin->hThreads[pos] = CreateThread(NULL, 0, ClientesThread, &dataAdmin->dataClientes, 0, NULL);
-        if (dataAdmin->hThreads[pos] == NULL) {
-            CloseHandle(dataAdmin->hPipe[pos]);
-            Abort(_T("CreateThread failed.\n"));
-        }
-
-        MensagemInfo(_T("Novo cliente conectado."));
-
-    }
-
-
-}
-
 // Thread para lidar com os comandos do administrador
 DWORD WINAPI ComandosThread(LPVOID lpParam) {
 
@@ -371,11 +327,7 @@ DWORD WINAPI ComandosThread(LPVOID lpParam) {
 // Thread para chamar as threads dos clientes
 DWORD WINAPI ClientesThread(LPVOID lpParam) {
 
-    // Passar um dataAdmin
-
-    DataClientes* dataCliente = (DataClientes*)lpParam;
-    HANDLE hPipe = dataCliente->hPipe;
-    HANDLE hSem = dataCliente->hSem;
+    DataAdmin* dataAdmin = (DataAdmin*)lpParam;
     TCHAR buffer[1024];
     DWORD dwRead, dwWritten;
     TCHAR returnString[STR_LEN];
@@ -385,13 +337,13 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
 
     // Lê as mensagens dos clientes
     while (true) {
-        if (!ReadFile(dataCliente->hPipe[dataCliente->idPipe], buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
+        if (!ReadFile(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe], buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
             Abort(_T("Houve um erro na leitura de mensagens do cliente.\n"));
         }
         MensagemInfo(_T("Comando recebido: "));
         _tprintf_s(buffer);
 
-        _tcscpy_s(returnString, STR_LEN, executaComandos(buffer, &dataCliente->activeUser, dataCliente->numUtilizadores, dataCliente->numEmpresas, dataCliente->empresas, dataCliente->utilizadores, dataCliente->carteiras, dataCliente->ultimaTransacao));
+        _tcscpy_s(returnString, STR_LEN, executaComandos(buffer, dataAdmin->dataClientes.activeUser, dataAdmin->numUtilizadores, dataAdmin->numEmpresas, dataAdmin->empresas, dataAdmin->utilizadores, dataAdmin->carteiras, dataAdmin->ultimaTransacao));
 
         if (returnString == NULL) {
             Erro(_T("\nErro ao executar o comando."));
@@ -400,22 +352,18 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
         if (!_tcsicmp(returnString, _T("EXIT"))) {
 
             // O utilizador não está logado
-            if (!_tcsicmp(dataCliente->activeUser, _T(""))) {
-                // Fecha a handle
+            if (!_tcsicmp(dataAdmin->dataClientes.activeUser, _T(""))) {
 
-                // fazer closeHandle para destruir o recurso no sistema e limpar a tabela de handles
-                // 
-                CloseHandle(hPipe);
-                // dataCliente->hPipe = NULL
-                // hPipe = NULL;
+                CloseHandle(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe]);
+                dataAdmin->hPipes[dataAdmin->dataClientes.idPipe] = NULL;
                 return 0;
             }
             // Se o utilizador estiver logado, vamos meter o estado offline
-            else if (dataCliente->utilizadores[getIndiceUtilizador(dataCliente->activeUser, dataCliente->utilizadores, dataCliente->numUtilizadores)].online == true) {
-                dataCliente->utilizadores[getIndiceUtilizador(dataCliente->activeUser, dataCliente->utilizadores, dataCliente->numUtilizadores)].online = false;
+            else if (dataAdmin->utilizadores[getIndiceUtilizador(dataAdmin->dataClientes.activeUser, dataAdmin->utilizadores, dataAdmin->numUtilizadores)].online == true) {
+                dataAdmin->utilizadores[getIndiceUtilizador(dataAdmin->dataClientes.activeUser, dataAdmin->utilizadores, dataAdmin->numUtilizadores)].online = false;
 
-                // Fecha a handle
-                CloseHandle(hPipe);
+                CloseHandle(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe]);
+                dataAdmin->hPipes[dataAdmin->dataClientes.idPipe] = NULL;
                 return 0;
             }
             else {
@@ -429,17 +377,12 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
             MensagemInfo(_T("Comando inválido recebido."));
         }
         else {
-            if (!WriteFile(hPipe, returnString, (_tcslen(returnString) + 1) * sizeof(TCHAR), &dwWritten, NULL)) {
+            if (!WriteFile(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe], returnString, (_tcslen(returnString) + 1) * sizeof(TCHAR), &dwWritten, NULL)) {
                 Abort(_T("WriteFile failed.\n"));
             }
 
         }
     }
-
-    // Fecha a handle
-    CloseHandle(hPipe);
-
-    return 0;
 }
 
 void Erro(const TCHAR* mensagem) {
@@ -652,6 +595,27 @@ BOOL temEmpresa(TCHAR* activeUser, TCHAR* nome, CarteiraAcoes carteira) {
 
         return false;
     }
+}
 
+// Function to return the index of a free pipe
+DWORD getPipe(HANDLE* hPipes, DWORD numPipes) {
+    for (DWORD i = 0; i < numPipes; i++) {
+        _tprintf_s(_T("numPipes: %lu | i: %lu\n"), numPipes, i);
+        if (hPipes[i] == NULL) {
+            _tprintf_s(_T("Vou devolver %lu\n"), i);
+            return i;
+        }
+
+        _tprintf_s(_T("oasspi\n"));
+    }
+
+    // Return a special value to indicate no free pipe was found
+    return (DWORD)-1; // Or any other appropriate value, but not NULL
+}
+
+void inicializaPipes(HANDLE* hPipes, DWORD numPipes) {
+    for (DWORD i = 0; i < numPipes; i++) {
+        hPipes[i] = NULL;
+    }
 }
 

@@ -20,3 +20,5 @@ DWORD getIndiceUtilizador(TCHAR* username, Utilizador* utilizadores, DWORD numUt
 DWORD getIndiceCarteira(TCHAR* username, CarteiraAcoes* carteiras, DWORD numUtilizadores);
 DWORD getIndiceEmpresa(TCHAR* nome, Empresa* empresas, DWORD numEmpresas);
 BOOL temEmpresa(TCHAR* activeUser, TCHAR* nome, CarteiraAcoes carteira);
+DWORD getPipe(HANDLE* hPipes, DWORD numPipes);
+void inicializaPipes(HANDLE* hPipes, DWORD numPipes);
