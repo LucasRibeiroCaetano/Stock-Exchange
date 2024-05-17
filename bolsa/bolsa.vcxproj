@@ -136,7 +136,6 @@
   <ItemGroup>
     <ClInclude Include="data.h" />
     <ClInclude Include="eventos.h" />
-    <ClInclude Include="mp.h" />
     <ClInclude Include="registry.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

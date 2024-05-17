@@ -1,4 +1,4 @@
-#include "mp.h"
+#include "data.h"
 
 #define mpName TEXT("SharedMemory")
 
