@@ -332,11 +332,11 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
     DWORD dwRead, dwWritten;
     TCHAR returnString[STR_LEN];
 
-
     // Read file vai ser dataAdmin->dataCliente->hPipe[dataAdmin->dataCliente->idPipe]
 
     // Lê as mensagens dos clientes
     while (true) {
+
         if (!ReadFile(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe], buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
             Abort(_T("Houve um erro na leitura de mensagens do cliente.\n"));
         }
@@ -372,6 +372,8 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
 
         }
 
+        _tprintf_s(_T("\n3\n"));
+
         // Comando inválido, não vamos enviar para o servidor
         if (!_tcsicmp(returnString, _T("Login Obrigatório."))) {
             MensagemInfo(_T("Comando inválido recebido."));
@@ -395,17 +397,32 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
     TCHAR comando[STR_LEN];
     DWORD nParam = contaParametros(linha);
     TCHAR result[STR_LEN];
+    DWORD indice = 0;
     extrairParametros(nParam, linha, comando, params);
 
     if (!_tcsicmp(comando, _T("login"))) {
 
+        _tprintf_s(_T("\n1\n"));
+
         if (nParam == 2) {
 
-            if (utilizadores[getIndiceUtilizador(params[0], utilizadores, numUtilizadores)].online) {
+            _tprintf_s(_T("\n2\n"));
+
+            indice = getIndiceUtilizador(params[0], utilizadores, numUtilizadores);
+
+            if (indice == - 1) {
+                return _T("Utilizador não existe.");
+            }
+
+            if (utilizadores[indice].online) {
                 return _T("O Utilizador já se encontra online.");
             }
 
+            _tprintf_s(_T("\n3\n"));
+
             for (DWORD i = 0; i < numUtilizadores; i++) {
+
+                _tprintf_s(_T("\n|%s|==|%s|\n"), params[0], utilizadores[i].username);
                 if (!_tcsicmp(params[0], utilizadores[i].username)) {
                     if (!_tcsicmp(params[1], utilizadores[i].password)) {
                         _tcscpy_s(activeUser, STR_LEN, params[0]);
@@ -554,6 +571,8 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 DWORD getIndiceUtilizador(TCHAR* username, Utilizador* utilizadores, DWORD numUtilizadores) {
 
     for (DWORD i = 0; i < numUtilizadores; i++) {
+
+        _tprintf_s(_T("getIndice: %s==%s"), username, utilizadores[i].username);
         if (!_tcsicmp(username, utilizadores[i].username)) {
             return i;
         }
@@ -563,8 +582,12 @@ DWORD getIndiceUtilizador(TCHAR* username, Utilizador* utilizadores, DWORD numUt
 
 DWORD getIndiceCarteira(TCHAR* username, CarteiraAcoes* carteiras, DWORD numUtilizadores) {
 
+    _tprintf_s(_T("getIndice username: %s"), username);
+
+    _tprintf_s(_T("numUtilizadores: %d"), numUtilizadores);
 
     for (DWORD i = 0; i < numUtilizadores; i++) {
+        _tprintf_s(_T("\n%s==%s\n"), username, carteiras[i].username);
         if (!_tcsicmp(username, carteiras[i].username)) {
             return i;
         }

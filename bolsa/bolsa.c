@@ -101,6 +101,10 @@ int _tmain(int argc, TCHAR* argv[]) {
             utilizadores[numUtilizadores].saldo = saldoTemp;
             utilizadores[numUtilizadores].online = false;
 
+            // Para cada utilizador inicializar as carteiras de cada um
+            _tcscpy_s(carteiras[numUtilizadores].username, STR_LEN, usernameTemp);
+            carteiras[numUtilizadores].numEmpresas = 0;
+
             numUtilizadores++;
         }
     }
@@ -191,6 +195,8 @@ int _tmain(int argc, TCHAR* argv[]) {
         Abort(_T("Erro ao criar a thread do administrador."));
     }
 
+    // Preciso de criar outra thread para o board
+
     while (true) {
 
         // Criação do named pipe
@@ -204,25 +210,13 @@ int _tmain(int argc, TCHAR* argv[]) {
             Abort(_T("ConnectNamedPipe failed.\n"));
         }
 
-        
-
-        _tprintf_s(_T("\n1\n"));
-
         pos = getPipe(dataAdmin.hPipes, numPipes);
-
-        _tprintf_s(_T("\n2\n"));
 
         dataAdmin.dataClientes.idPipe = pos;
 
-        _tprintf_s(_T("\n3\n"));
-
         dataAdmin.hPipes[pos] = hPipe; // quando se desligar faço isto = NULL
 
-        _tprintf_s(_T("\n4\n"));
-
         dataAdmin.hThreads[pos] = CreateThread(NULL, 0, ClientesThread, &dataAdmin, 0, NULL);
-
-        _tprintf_s(_T("\n5\n"));
 
         if (dataAdmin.hThreads[pos] == NULL) {
             CloseHandle(dataAdmin.hPipes[pos]);
