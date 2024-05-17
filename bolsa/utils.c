@@ -81,30 +81,38 @@ void MensagemInfo(const TCHAR* mensagem) {
 DWORD WINAPI ThreadPrincipal(LPVOID lpParam) {
 
     DataAdmin* dataAdmin = (DataAdmin*)lpParam;
+    HANDLE hPipe;
 
     DWORD pos = 0;
 
     while (true) {
 
+        // Fazer uma funçãp para encontrar a posição vazia do array de handles de pipes (se for null)
+        // pos = função()
         // Criação do named pipe
-        dataAdmin->hPipe[pos] = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
-        if (dataAdmin->hPipe[pos] == INVALID_HANDLE_VALUE) {
+        hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
+        if (hPipe == INVALID_HANDLE_VALUE) {
             MensagemInfo(_T("Número máximo de clientes atingido.\n"));
         }
 
-        if (!ConnectNamedPipe(dataAdmin->hPipe[pos], NULL) && GetLastError() != ERROR_PIPE_CONNECTED) {
-            CloseHandle(dataAdmin->hPipe[pos]);
+        if (!ConnectNamedPipe(hPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED) {
+            CloseHandle(hPipe);
             Abort(_T("ConnectNamedPipe failed.\n"));
         }
 
+        // Encontrar posição vaga na tabela == NULL na tabela dataAdmin->hPipe = pos
+        dataAdmin->dataClientes.idPipe = pos;
+        dataAdmin->hPipe[pos] = hPipe; // quando se desligar faço isto = NULL
+
         // Fazer o mesmo para o semáforo
         // dataCliente.hSem = 
+
+        // 
         dataAdmin->hThreads[pos] = CreateThread(NULL, 0, ClientesThread, &dataAdmin->dataClientes, 0, NULL);
         if (dataAdmin->hThreads[pos] == NULL) {
             CloseHandle(dataAdmin->hPipe[pos]);
             Abort(_T("CreateThread failed.\n"));
         }
-        pos++;
 
         MensagemInfo(_T("Novo cliente conectado."));
 
@@ -363,6 +371,8 @@ DWORD WINAPI ComandosThread(LPVOID lpParam) {
 // Thread para chamar as threads dos clientes
 DWORD WINAPI ClientesThread(LPVOID lpParam) {
 
+    // Passar um dataAdmin
+
     DataClientes* dataCliente = (DataClientes*)lpParam;
     HANDLE hPipe = dataCliente->hPipe;
     HANDLE hSem = dataCliente->hSem;
@@ -371,9 +381,11 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
     TCHAR returnString[STR_LEN];
 
 
+    // Read file vai ser dataAdmin->dataCliente->hPipe[dataAdmin->dataCliente->idPipe]
+
     // Lê as mensagens dos clientes
     while (true) {
-        if (!ReadFile(hPipe, buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
+        if (!ReadFile(dataCliente->hPipe[dataCliente->idPipe], buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
             Abort(_T("Houve um erro na leitura de mensagens do cliente.\n"));
         }
         MensagemInfo(_T("Comando recebido: "));
@@ -390,7 +402,12 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
             // O utilizador não está logado
             if (!_tcsicmp(dataCliente->activeUser, _T(""))) {
                 // Fecha a handle
+
+                // fazer closeHandle para destruir o recurso no sistema e limpar a tabela de handles
+                // 
                 CloseHandle(hPipe);
+                // dataCliente->hPipe = NULL
+                // hPipe = NULL;
                 return 0;
             }
             // Se o utilizador estiver logado, vamos meter o estado offline

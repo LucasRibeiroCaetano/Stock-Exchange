@@ -62,9 +62,7 @@ typedef struct {
     TCHAR comando[STR_LEN];
     TCHAR params[2][STR_LEN];
 
-    // Handles
-    HANDLE hPipe;
-    HANDLE hSem;
+    DWORD idPipe; // id do pipe no array hPipe
 
     // Dados
     TCHAR activeUser[STR_LEN]; // username do utilizador online
