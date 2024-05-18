@@ -199,33 +199,20 @@ int _tmain(int argc, TCHAR* argv[]) {
     // Preciso de criar outra thread para o board
 
 
-    // Criar as instâncias do pipe para nClientes
-    for (DWORD i = 0; i < dataAdmin.numPipes; i++) {
-        dataAdmin.hPipes[i] = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
-        if (dataAdmin.hPipes[i] == INVALID_HANDLE_VALUE) {
-            MensagemInfo(_T("Erro na criação do pipe.\n"));
-        }
-    }
-
-
     while (true) {
 
-        pos = getPipe(dataAdmin.hPipes, dataAdmin.numPipes);
-
-        if (pos == -1) {
-            _tprintf_s(_T("Número máximo de clientes conectados. Não há pipes livres."));
-            continue;
-        }
-
+        // Criação do named pipe
         hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
         if (hPipe == INVALID_HANDLE_VALUE) {
-            MensagemInfo(_T("Erro na criação do pipe.\n"));
+            MensagemInfo(_T("Número máximo de clientes atingido.\n"));
         }
 
         if (!ConnectNamedPipe(hPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED) {
             CloseHandle(hPipe);
             Abort(_T("ConnectNamedPipe failed.\n"));
         }
+
+        pos = getPipe(dataAdmin.hPipes, dataAdmin.numPipes);
 
         dataAdmin.dataClientes.idPipe = pos;
 
