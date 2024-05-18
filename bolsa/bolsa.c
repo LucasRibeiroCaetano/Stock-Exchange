@@ -227,7 +227,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             Abort(_T("ConnectNamedPipe failed.\n"));
         }
 
-        dataAdmin.dataClientes[pos].idPipe = pos;
+        dataAdmin.dataClientes.idPipe = pos;
 
         dataAdmin.hPipes[pos] = hPipe; // quando se desligar faço isto = NULL
 
