@@ -185,6 +185,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     dataAdmin.utilizadores = utilizadores;
     dataAdmin.numUtilizadores = numUtilizadores;
     dataAdmin.ultimaTransacao = ultimaTransacao;
+    dataAdmin.carteiras = carteiras;
     dataAdmin.mp = mp;
     inicializaPipes(dataAdmin.hPipes, numPipes);
     _tcscpy_s(dataAdmin.dataClientes.activeUser, STR_LEN, _T(""));
@@ -235,6 +236,6 @@ int _tmain(int argc, TCHAR* argv[]) {
     UnmapViewOfFile(mp.pBuf);
     CloseHandle(mp.hMapFile);
     CloseHandle(eventos.hRead);
-
+    
     return 0;
 }

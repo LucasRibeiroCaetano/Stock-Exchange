@@ -310,7 +310,7 @@ DWORD WINAPI ComandosThread(LPVOID lpParam) {
 
             if (nParam == 0) {
                 _tprintf(_T("\nEncerrando o programa...\n\n"));
-                return 0;
+                return 1;
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
@@ -402,11 +402,7 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 
     if (!_tcsicmp(comando, _T("login"))) {
 
-        _tprintf_s(_T("\n1\n"));
-
         if (nParam == 2) {
-
-            _tprintf_s(_T("\n2\n"));
 
             indice = getIndiceUtilizador(params[0], utilizadores, numUtilizadores);
 
@@ -418,11 +414,7 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
                 return _T("O Utilizador já se encontra online.");
             }
 
-            _tprintf_s(_T("\n3\n"));
-
             for (DWORD i = 0; i < numUtilizadores; i++) {
-
-                _tprintf_s(_T("\n|%s|==|%s|\n"), params[0], utilizadores[i].username);
                 if (!_tcsicmp(params[0], utilizadores[i].username)) {
                     if (!_tcsicmp(params[1], utilizadores[i].password)) {
                         _tcscpy_s(activeUser, STR_LEN, params[0]);
@@ -571,8 +563,6 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 DWORD getIndiceUtilizador(TCHAR* username, Utilizador* utilizadores, DWORD numUtilizadores) {
 
     for (DWORD i = 0; i < numUtilizadores; i++) {
-
-        _tprintf_s(_T("getIndice: %s==%s"), username, utilizadores[i].username);
         if (!_tcsicmp(username, utilizadores[i].username)) {
             return i;
         }
@@ -582,12 +572,7 @@ DWORD getIndiceUtilizador(TCHAR* username, Utilizador* utilizadores, DWORD numUt
 
 DWORD getIndiceCarteira(TCHAR* username, CarteiraAcoes* carteiras, DWORD numUtilizadores) {
 
-    _tprintf_s(_T("getIndice username: %s"), username);
-
-    _tprintf_s(_T("numUtilizadores: %d"), numUtilizadores);
-
     for (DWORD i = 0; i < numUtilizadores; i++) {
-        _tprintf_s(_T("\n%s==%s\n"), username, carteiras[i].username);
         if (!_tcsicmp(username, carteiras[i].username)) {
             return i;
         }
@@ -623,13 +608,9 @@ BOOL temEmpresa(TCHAR* activeUser, TCHAR* nome, CarteiraAcoes carteira) {
 // Function to return the index of a free pipe
 DWORD getPipe(HANDLE* hPipes, DWORD numPipes) {
     for (DWORD i = 0; i < numPipes; i++) {
-        _tprintf_s(_T("numPipes: %lu | i: %lu\n"), numPipes, i);
         if (hPipes[i] == NULL) {
-            _tprintf_s(_T("Vou devolver %lu\n"), i);
             return i;
         }
-
-        _tprintf_s(_T("oasspi\n"));
     }
 
     // Return a special value to indicate no free pipe was found
