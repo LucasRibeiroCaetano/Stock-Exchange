@@ -343,7 +343,7 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
         MensagemInfo(_T("Comando recebido: "));
         _tprintf_s(buffer);
 
-        _tcscpy_s(returnString, STR_LEN, executaComandos(buffer, dataAdmin->dataClientes.activeUser, dataAdmin->numUtilizadores, dataAdmin->numEmpresas, dataAdmin->empresas, dataAdmin->utilizadores, dataAdmin->carteiras, dataAdmin->ultimaTransacao));
+        _tcscpy_s(returnString, STR_LEN, executaComandos(buffer, dataAdmin->dataClientes.activeUser, dataAdmin->numUtilizadores, dataAdmin->numEmpresas, dataAdmin->empresas, dataAdmin->utilizadores, dataAdmin->carteiras, dataAdmin->ultimaTransacao, dataAdmin->hSem));
 
         if (returnString == NULL) {
             Erro(_T("\nErro ao executar o comando."));
@@ -389,7 +389,7 @@ void Erro(const TCHAR* mensagem) {
     _ftprintf(stderr, _T("\n\033[1;31m%s\033[0m\n\n"), mensagem);
 }
 
-TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, DWORD numEmpresas, Empresa empresas[MAX_EMPRESAS], Utilizador utilizadores[MAX_USERS], CarteiraAcoes carteiras[MAX_USERS], UltimaTransacao ultimaTransacao) {
+TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, DWORD numEmpresas, Empresa empresas[MAX_EMPRESAS], Utilizador utilizadores[MAX_USERS], CarteiraAcoes carteiras[MAX_USERS], UltimaTransacao ultimaTransacao, HANDLE hSem) {
 
     TCHAR params[2][STR_LEN];
     TCHAR comando[STR_LEN];
@@ -547,6 +547,9 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
     else if ((!_tcsicmp(comando, _T("exit")))) {
         if (nParam == 0) {
             // Libertar os recursos desse cliente??
+
+            ReleaseSemaphore(hSem, 1, NULL);
+
             return _T("EXIT");
         }
         else {
