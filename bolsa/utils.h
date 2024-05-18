@@ -14,7 +14,6 @@ void MensagemInfo(const TCHAR* mensagem);
 void Erro(const TCHAR* mensagem);
 DWORD WINAPI ComandosThread(LPVOID lpParam);
 DWORD WINAPI ClientesThread(LPVOID lpParam);
-DWORD WINAPI ThreadPrincipal(LPVOID lpParam);
 TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, DWORD numEmpresas, Empresa empresas[MAX_EMPRESAS], Utilizador utilizadores[MAX_USERS], CarteiraAcoes carteiras[MAX_USERS], UltimaTransacao ultimaTransacao);
 DWORD getIndiceUtilizador(TCHAR* username, Utilizador* utilizadores, DWORD numUtilizadores);
 DWORD getIndiceCarteira(TCHAR* username, CarteiraAcoes* carteiras, DWORD numUtilizadores);
