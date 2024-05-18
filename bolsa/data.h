@@ -84,7 +84,7 @@ typedef struct {
     CarteiraAcoes* carteiras;
     DWORD numUtilizadores;
     struct MP mp;
-
+    HANDLE hSem;
     DataClientes dataClientes;
 } DataAdmin;
 

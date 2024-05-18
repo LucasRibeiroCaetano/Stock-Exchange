@@ -48,6 +48,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     TCHAR param[MAX_PARAM][STR_LEN];
     DWORD nSegundos = 0; // Comando Pause
     DWORD pos = 0;
+    DWORD dwWaitResult;
 
 
 
@@ -176,8 +177,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     //----------------------------------------------- Threads ------------------------------------------
     
     dataAdmin.numPipes = nClientes;
-
-    // Inicializar as estruturas
+    dataAdmin.hSem = CreateSemaphore(NULL, nClientes, nClientes, NULL);
     dataAdmin.empresas = empresas;
     dataAdmin.numEmpresas = numEmpresas;
     dataAdmin.eventos = eventos;
@@ -197,35 +197,47 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     // Preciso de criar outra thread para o board
+    DWORD i = 0;
 
 
     while (true) {
 
-        // Criação do named pipe
-        hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
-        if (hPipe == INVALID_HANDLE_VALUE) {
-            MensagemInfo(_T("Número máximo de clientes atingido.\n"));
+        dwWaitResult = WaitForSingleObject(dataAdmin.hSem, INFINITE);
+
+        if (dwWaitResult == WAIT_OBJECT_0) {
+
+            // Criação do named pipe
+            hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
+            if (hPipe == INVALID_HANDLE_VALUE) {
+                MensagemInfo(_T("Número máximo de clientes atingido.\n"));
+            }
+
+            if (!ConnectNamedPipe(hPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED) {
+                CloseHandle(hPipe);
+                Abort(_T("ConnectNamedPipe failed.\n"));
+            }
+
+            pos = getPipe(dataAdmin.hPipes, dataAdmin.numPipes);
+
+            dataAdmin.dataClientes.idPipe = pos;
+
+            dataAdmin.hPipes[pos] = hPipe; // quando se desligar faço isto = NULL
+
+            dataAdmin.hThreads[pos] = CreateThread(NULL, 0, ClientesThread, &dataAdmin, 0, NULL);
+
+            if (dataAdmin.hThreads[pos] == NULL) {
+                CloseHandle(dataAdmin.hPipes[pos]);
+                Abort(_T("CreateThread failed.\n"));
+            }
+
+            MensagemInfo(_T("Novo cliente conectado."));
+
+        }
+        else {
+            _tprintf_s(_T("\n\nJá não existem slots\n\n"));
         }
 
-        if (!ConnectNamedPipe(hPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED) {
-            CloseHandle(hPipe);
-            Abort(_T("ConnectNamedPipe failed.\n"));
-        }
-
-        pos = getPipe(dataAdmin.hPipes, dataAdmin.numPipes);
-
-        dataAdmin.dataClientes.idPipe = pos;
-
-        dataAdmin.hPipes[pos] = hPipe; // quando se desligar faço isto = NULL
-
-        dataAdmin.hThreads[pos] = CreateThread(NULL, 0, ClientesThread, &dataAdmin, 0, NULL);
-
-        if (dataAdmin.hThreads[pos] == NULL) {
-            CloseHandle(dataAdmin.hPipes[pos]);
-            Abort(_T("CreateThread failed.\n"));
-        }
-
-        MensagemInfo(_T("Novo cliente conectado."));
+        i++;
     }
     //----------------------------------------------- Threads ------------------------------------------
 

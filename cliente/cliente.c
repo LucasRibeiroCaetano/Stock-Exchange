@@ -43,7 +43,7 @@ int main() {
     // Connect to the named pipe
     hPipe = CreateFile(PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (hPipe == INVALID_HANDLE_VALUE) {
-        Abort(_T("CreateFile failed.\n"));
+        MensagemInfo(_T("Número máximo de clientes atingido. Tente novamente mais tarde...\n"));
         return 1;
     }
 
