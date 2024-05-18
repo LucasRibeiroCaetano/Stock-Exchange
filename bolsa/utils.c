@@ -372,8 +372,6 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
 
         }
 
-        _tprintf_s(_T("\n3\n"));
-
         // Comando inválido, não vamos enviar para o servidor
         if (!_tcsicmp(returnString, _T("Login Obrigatório."))) {
             MensagemInfo(_T("Comando inválido recebido."));
@@ -613,8 +611,8 @@ DWORD getPipe(HANDLE* hPipes, DWORD numPipes) {
         }
     }
 
-    // Return a special value to indicate no free pipe was found
-    return (DWORD)-1; // Or any other appropriate value, but not NULL
+    // Devolve -1 se não houver pipe livre
+    return (DWORD)-1;
 }
 
 void inicializaPipes(HANDLE* hPipes, DWORD numPipes) {

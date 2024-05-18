@@ -72,6 +72,10 @@ typedef struct {
 typedef struct {
     HANDLE hPipes[MAX_USERS];
     HANDLE hThreads[MAX_USERS];
+
+    // Número máximo de clientes que podem estar conectados ao mesmo tempo
+    DWORD numPipes;
+
     Empresa* empresas;
     DWORD numEmpresas;
     UltimaTransacao ultimaTransacao;
