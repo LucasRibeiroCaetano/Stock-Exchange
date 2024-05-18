@@ -331,13 +331,13 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
     TCHAR buffer[1024];
     DWORD dwRead, dwWritten;
     TCHAR returnString[STR_LEN];
+    DWORD id = dataAdmin->dataClientes.idPipe;
 
-    // Read file vai ser dataAdmin->dataCliente->hPipe[dataAdmin->dataCliente->idPipe]
 
     // Lê as mensagens dos clientes
     while (true) {
 
-        if (!ReadFile(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe], buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
+        if (!ReadFile(dataAdmin->hPipes[id], buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
             Abort(_T("Houve um erro na leitura de mensagens do cliente.\n"));
         }
         MensagemInfo(_T("Comando recebido: "));
@@ -354,16 +354,16 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
             // O utilizador não está logado
             if (!_tcsicmp(dataAdmin->dataClientes.activeUser, _T(""))) {
 
-                CloseHandle(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe]);
-                dataAdmin->hPipes[dataAdmin->dataClientes.idPipe] = NULL;
+                CloseHandle(dataAdmin->hPipes[id]);
+                dataAdmin->hPipes[id] = NULL;
                 return 0;
             }
             // Se o utilizador estiver logado, vamos meter o estado offline
             else if (dataAdmin->utilizadores[getIndiceUtilizador(dataAdmin->dataClientes.activeUser, dataAdmin->utilizadores, dataAdmin->numUtilizadores)].online == true) {
                 dataAdmin->utilizadores[getIndiceUtilizador(dataAdmin->dataClientes.activeUser, dataAdmin->utilizadores, dataAdmin->numUtilizadores)].online = false;
 
-                CloseHandle(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe]);
-                dataAdmin->hPipes[dataAdmin->dataClientes.idPipe] = NULL;
+                CloseHandle(dataAdmin->hPipes[id]);
+                dataAdmin->hPipes[id] = NULL;
                 return 0;
             }
             else {
@@ -377,7 +377,7 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
             MensagemInfo(_T("Comando inválido recebido."));
         }
         else {
-            if (!WriteFile(dataAdmin->hPipes[dataAdmin->dataClientes.idPipe], returnString, (_tcslen(returnString) + 1) * sizeof(TCHAR), &dwWritten, NULL)) {
+            if (!WriteFile(dataAdmin->hPipes[id], returnString, (_tcslen(returnString) + 1) * sizeof(TCHAR), &dwWritten, NULL)) {
                 Abort(_T("WriteFile failed.\n"));
             }
 

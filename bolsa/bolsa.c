@@ -196,10 +196,6 @@ int _tmain(int argc, TCHAR* argv[]) {
         Abort(_T("Erro ao criar a thread do administrador."));
     }
 
-    // Preciso de criar outra thread para o board
-    DWORD i = 0;
-
-
     while (true) {
 
         dwWaitResult = WaitForSingleObject(dataAdmin.hSem, INFINITE);
@@ -236,8 +232,6 @@ int _tmain(int argc, TCHAR* argv[]) {
         else {
             _tprintf_s(_T("\n\nJá não existem slots\n\n"));
         }
-
-        i++;
     }
     //----------------------------------------------- Threads ------------------------------------------
 

@@ -79,12 +79,12 @@ int main() {
 
             if (nParam == 0) {
                 _tprintf_s(_T("\n*********************************************************\n\n"));
-                _tprintf(_T("Acrescentar uma empresa\n - addc <nome-empresa> <n�mero-a��es> <pre�o-a��o>\n\n"));
+                _tprintf(_T("Acrescentar uma empresa\n - addc <nome-empresa> <n�mero-a��es> <preço-ação>\n\n"));
                 _tprintf(_T("Ler as empresas de um ficheiro de texto\n - addf <nome-ficheiro>\n\n"));
                 _tprintf(_T("Listar todas as empresas\n - listc\n\n"));
-                _tprintf(_T("Redefinir custo das a��es de uma empresa\n - stock <nome-empresa> <pre�o-a��o>\n\n"));
+                _tprintf(_T("Redefinir custo das ações de uma empresa\n - stock <nome-empresa> <preço-ação>\n\n"));
                 _tprintf(_T("Listar utilizadores\n - users\n\n"));
-                _tprintf(_T("Pausar as opera��es de compra e venda\n - pause <n�mero-segundos>\n\n"));
+                _tprintf(_T("Pausar as operações de compra e venda\n - pause <n�mero-segundos>\n\n"));
                 _tprintf(_T("Limpar a consola\n - limpar\n\n"));
                 _tprintf(_T("Encerrar a plataforma\n - close\n\n"));
                 _tprintf_s(_T("*********************************************************\n\n"));
@@ -112,7 +112,7 @@ int main() {
                 }
             }
             else
-                Erro(_T("Número de parâmetros inv�lido."));
+                Erro(_T("Número de parâmetros inválido."));
 
         }
         else if (!_tcsicmp(comando, _T("listc"))) {
@@ -180,7 +180,7 @@ int main() {
         else if (!_tcsicmp(comando, _T("balance"))) {
 
             if (loggedIn == false) {
-                Erro(_T("Login Obrigat�rio."));
+                Erro(_T("Login Obrigatório."));
             }
             else {
                 if (nParam == 0) {
@@ -214,7 +214,7 @@ int main() {
                 return 0;
             }
             else
-                Erro(_T("N�mero de parâmetros inv�lido."));
+                Erro(_T("N�mero de parâmetros inválido."));
         }
         else {
             Erro(_T("Comando Inválido."));
