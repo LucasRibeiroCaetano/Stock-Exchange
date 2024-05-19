@@ -95,6 +95,11 @@ typedef struct {
     DataClientes dataClientes;
 } DataAdmin;
 
+typedef struct {
+    Empresa* empresas;
+    DWORD numEmpresas;
+} DataListc;
+
 
 
 

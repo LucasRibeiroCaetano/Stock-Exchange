@@ -162,8 +162,53 @@ int main() {
                     Abort(_T("Houve um erro na leitura de mensagens do cliente.\n"));
                 }
 
-                MensagemInfo(resultado);
-                _tprintf_s(_T("\n\n"));
+                MP mp;
+
+                if (!_tcsicmp(resultado, _T("listc"))) {
+                    mp.hMapFile = OpenFileMapping(
+                        FILE_MAP_ALL_ACCESS, // Read/write permission
+                        FALSE,               // Do not inherit the name
+                        TEXT("SharedMemory") // Name of the mapping object
+                    );
+
+                    if (mp.hMapFile == NULL) {
+                        Abort(_T("Não foi possível abrir o objecto de mapeamento de memória partilhada.\n"));
+                    }
+
+                    // Map the shared memory into the process address space
+                    mp.pBuf = (SharedData*)MapViewOfFile(mp.hMapFile,   // Handle to map object
+                        FILE_MAP_ALL_ACCESS, // Read/write permission
+                        0,
+                        0,
+                        0);
+
+                    if (mp.pBuf == NULL) {
+                        CloseHandle(mp.hMapFile);
+                        Abort(_T("Não foi possível mapear o ficheiro.\n"));
+                    }
+
+                    if (mp.pBuf->numEmpresas == 0)
+                        _tprintf_s(_T("\nNão existem empresas.\n\n"));
+
+                    else {
+                        _tprintf_s(_T("\n*********************************************************\n"));
+                        _tprintf(_T("\nLista de Empresas:\n\n"));
+
+                        for (DWORD i = 0; i < mp.pBuf->numEmpresas; i++) {
+                            _tprintf(_T("Empresa %d:\n"), i + 1);
+                            _tprintf(_T("  - Nome: %s\n"), mp.pBuf->empresas[i].nome);
+                            _tprintf(_T("  - Número de ações: %u\n"), mp.pBuf->empresas[i].num_acoes);
+                            _tprintf(_T("  - Preço da ação: %.2f\n\n"), mp.pBuf->empresas[i].preco_acao);
+                        }
+                        _tprintf_s(_T("*********************************************************\n\n"));
+                    }
+
+                }
+                else if (!_tcsicmp(resultado, _T("Não existem empresas."))) {
+                    MensagemInfo(resultado);
+                    _tprintf_s(_T("\n\n"));
+                }
+                    
             }
             else
                 Erro(_T("Número de parâmetros inválido."));

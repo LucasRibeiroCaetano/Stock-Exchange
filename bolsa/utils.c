@@ -453,23 +453,14 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
     }
 
     else if ((!_tcsicmp(comando, _T("listc")))) {
+
         if (nParam == 0) {
 
             if (numEmpresas == 0)
                 return _T("Não existem empresas.");
 
             else {
-                _tprintf_s(_T("\n*********************************************************\n"));
-                _tprintf(_T("\nLista de Empresas:\n\n"));
-
-                for (DWORD i = 0; i < numEmpresas; i++) {
-                    _tprintf(_T("Empresa %d:\n"), i + 1);
-                    _tprintf(_T("  - Nome: %s\n"), empresas[i].nome);
-                    _tprintf(_T("  - Número de ações: %u\n"), empresas[i].num_acoes);
-                    _tprintf(_T("  - Preço da ação: %.2f\n\n"), empresas[i].preco_acao);
-                }
-                _tprintf_s(_T("*********************************************************\n\n"));
-                return NULL;
+                return _T("listc");
             }
 
         }
@@ -480,15 +471,21 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
     else if ((!_tcsicmp(comando, _T("buy")))) {
 
         //Nome numAcoes
-        DWORD numAcoes;
+        int numAcoes;
         DWORD indCarteira = getIndiceCarteira(activeUser, carteiras, numUtilizadores);
+
+        // Se indEmpresa == -1, esta empresa não existe
         DWORD indEmpresa = getIndiceEmpresa(params[0], empresas, numEmpresas);
+
+        // Se indEmpresaCarteira == -1, o utilizador não tem esta empresa na carteira
+        DWORD indEmpresaCarteira = getIndiceEmpresaCarteira(activeUser, params[0], carteiras, numUtilizadores, carteiras[indCarteira].numEmpresas, indCarteira);
+
         DWORD indUtilizador = getIndiceUtilizador(activeUser, utilizadores, numUtilizadores);
-        BOOL naoIncrementar;
-        BOOL empresaExiste = false;
         float custo = 0;
 
-        _stscanf_s(params[1], _T("%u"), &numAcoes);
+        _stscanf_s(params[1], _T("%d"), &numAcoes);
+
+        _tprintf_s(_T("indCarteira: %d\nindEmpresa: %d\nindEmpresaCarteira: %d\nindUtilizador: %d\n"), indCarteira, indEmpresa, indEmpresaCarteira, indUtilizador);
 
         if (nParam == 2) {
             if (!_tcsicmp(activeUser, _T(""))) {
@@ -498,7 +495,13 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
             // O utilizador já está logado
             else {
 
-                _tprintf_s(_T("saldo: %f, custo: %f"), utilizadores[indUtilizador].saldo, empresas[indEmpresa].preco_acao * numAcoes);
+                if (indUtilizador == -1) {
+                    return _T("Utilizador não encontrado.");
+                }
+
+                if (indCarteira == -1) {
+                    return _T("Carteira não encontrada.");
+                }
 
                 custo = empresas[indEmpresa].preco_acao * numAcoes;
 
@@ -506,67 +509,37 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
                     return _T("Não tem saldo suficiente.");
                 }
 
-                // Encontra o nome da empresa
-                for (DWORD i = 0; i < numEmpresas; i++) {
-
-
-                    _tprintf_s(_T("%s==%s\n"), params[0], empresas[i].nome);
-                    // Verificar se a empresa existe
-                    if (!_tcsicmp(params[0], empresas[i].nome)) {
-
-
-                        _tprintf_s(_T("Empresa Existe!\n"));
-                        empresaExiste = true;
-
-                        if (carteiras[indCarteira].numEmpresas == 0) {
-
-                            // O utilizador não tem nenhuma empresa, temos de incrementar
-                            _tprintf_s(_T("Vou meter a false e parar o ciclo"));
-                            naoIncrementar = false;
-                            break;
-                        }
-
-                        // Verificar se o utilizador já tem ações dessa empresa
-                        for (DWORD j = 0; j < numEmpresas; j++) {
-                            if (!_tcsicmp(params[0], carteiras[indCarteira].empresas[j].nome)) {
-                                // Não incrementar número de empresas
-                                _tprintf_s(_T("Não incrementar true\n"));
-                                naoIncrementar = true;
-                            }
-                        }
-                    }
-                }
-
-                if (!empresaExiste)
+                // Verificar se a empresa existe
+                if (indEmpresa == -1)
                     return _T("Nome da empresa não encontrado.");
-                
 
-                indEmpresa = getIndiceEmpresa(params[0], empresas, numEmpresas);
-                _tprintf_s(_T("indEmpresa: %d|numAcoes: %d|activeUser: %s"), indEmpresa, numAcoes, activeUser);
                 empresas[indEmpresa].num_acoes -= numAcoes;
 
-                _tprintf_s(_T("Sigma"));
+
+                // O utilizador não tem ações desta empresa na carteira, o índice é numEmpresas
+                if (indEmpresaCarteira == -1) {
+
+                    indEmpresaCarteira = carteiras[indCarteira].numEmpresas;
+
+                    _tprintf_s(_T("indEmpresaCarteira: %d\n"), indEmpresaCarteira);
+
+                    _tprintf_s(_T("\nVou escrever no índice %d\n"), carteiras[indCarteira].numEmpresas);
+                    _tcscpy_s(carteiras[indCarteira].empresas[indEmpresaCarteira].nome, STR_LEN, empresas[indEmpresa].nome);
+                    carteiras[indCarteira].empresas[indEmpresaCarteira].num_acoes = numAcoes;
+                    carteiras[indCarteira].empresas[indEmpresaCarteira].preco_acao = empresas[indEmpresa].preco_acao;
+                    carteiras[indCarteira].numEmpresas++;
+
+                    _tprintf_s(_T("Fiquei com %d ações. nAcoes: %d"), carteiras[indCarteira].empresas[indEmpresaCarteira].num_acoes, numAcoes);
+                }
 
                 // O utilizador já tem ações desta empresa
-                if (naoIncrementar) {
-
-                    _tprintf_s(_T("Não vou incrementar o numEmpresas"));
-
-                    _tcscpy_s(carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas - 1].nome, STR_LEN, empresas[indEmpresa].nome);
-                    carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas - 1].num_acoes += numAcoes;
-                    carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas - 1].preco_acao = empresas[indEmpresa].preco_acao;
-                    //utilizadores[getIndiceUtilizador(activeUser, utilizadores, numUtilizadores)].saldo -= (numAcoes * empresas[indEmpresa].preco_acao);
-                }
-
-                // O utilizador não tem ações desta empresa
                 else {
-                    _tprintf_s(_T("Vou incrementar o numEmpresas"));
-                    _tcscpy_s(carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas].nome, STR_LEN, empresas[indEmpresa].nome);
-                    carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas].num_acoes += numAcoes;
-                    carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas].preco_acao = empresas[indEmpresa].preco_acao;
-                    carteiras[indCarteira].numEmpresas++;
-                    //utilizadores[getIndiceUtilizador(activeUser, utilizadores, numUtilizadores)].saldo -= (numAcoes * empresas[indEmpresa].preco_acao);
+                    _tcscpy_s(carteiras[indCarteira].empresas[indEmpresaCarteira].nome, STR_LEN, empresas[indEmpresa].nome);
+                    carteiras[indCarteira].empresas[indEmpresaCarteira].num_acoes += numAcoes;
+                    carteiras[indCarteira].empresas[indEmpresaCarteira].preco_acao = empresas[indEmpresa].preco_acao;
                 }
+
+                utilizadores[indUtilizador].saldo -= custo;
 
                 return _T("Compra bem sucedida.\n");
             }
@@ -579,6 +552,21 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
     }
 
     else if ((!_tcsicmp(comando, _T("sell")))) {
+
+        //Nome numAcoes
+        DWORD numAcoes;
+        DWORD indCarteira = getIndiceCarteira(activeUser, carteiras, numUtilizadores);
+
+        // Se indEmpresa == -1, esta empresa não existe
+        DWORD indEmpresa = getIndiceEmpresa(params[0], empresas, numEmpresas);
+
+        // Se indEmpresaCarteira == -1, o utilizador não tem esta empresa na carteira
+        DWORD indEmpresaCarteira = getIndiceEmpresaCarteira(activeUser, params[0], carteiras, numUtilizadores, carteiras[indCarteira].numEmpresas, indCarteira);
+
+        DWORD indUtilizador = getIndiceUtilizador(activeUser, utilizadores, numUtilizadores);
+        float lucro = 0;
+        _stscanf_s(params[1], _T("%u"), &numAcoes);
+
         if (nParam == 2) {
 
             if (!_tcsicmp(activeUser, _T(""))) {
@@ -587,22 +575,38 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 
             // O utilizador já está logado
             else {
-                return _T("Sucesso!");
 
-                /*
-                // Alterar a lógica para venda
-                for (DWORD i = 0; i < numEmpresas; i++) {
-                    if (!_tcsicmp(params[0], empresas[i].nome)) {
-                        indEmpresa = getIndiceEmpresa(empresas[i].nome, empresas, numEmpresas);
-                        _stscanf_s(params[1], _T("%u"), &numAcoes);
-                        empresas[i].num_acoes -= numAcoes;
-                        _tcscpy_s(carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas - 1].nome, STR_LEN, empresas[i].nome);
-                        carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas - 1].num_acoes += numAcoes;
-                        carteiras[indCarteira].empresas[carteiras[indCarteira].numEmpresas - 1].preco_acao = empresas[indEmpresa].preco_acao;
-                    }
+                if (indUtilizador == -1) {
+                    return _T("Utilizador não encontrado.");
                 }
-                */
 
+                if (indCarteira == -1) {
+                    return _T("Carteira não encontrada.");
+                }
+
+                if (indEmpresaCarteira == -1) {
+                    return _T("Não tem ações dessa empresa.");
+                }
+
+                lucro = empresas[indEmpresa].preco_acao * numAcoes;
+
+                // Tem ações suficientes para vender?
+                if (carteiras[indCarteira].empresas[indEmpresaCarteira].num_acoes < numAcoes) {
+                    return _T("Não tens ações suficientes.");
+                }
+
+                // Se tem ações da empresa, quer dizer que ela já existe
+
+                // Adicionar as ações ao mercado
+                empresas[indEmpresa].num_acoes += numAcoes;
+
+                // Retirar as ações do utilizador
+                carteiras[indCarteira].empresas[indEmpresaCarteira].num_acoes -= numAcoes;
+
+                // Adicionar o dinheiro
+                utilizadores[indUtilizador].saldo += lucro;
+
+                return _T("Venda bem sucedida.\n");
             }
 
         }
@@ -651,6 +655,8 @@ DWORD getIndiceUtilizador(TCHAR* username, Utilizador* utilizadores, DWORD numUt
             return i;
         }
     }
+
+    // Utilizador não encontrado
     return -1;
 }
 
@@ -661,6 +667,26 @@ DWORD getIndiceCarteira(TCHAR* username, CarteiraAcoes* carteiras, DWORD numUtil
             return i;
         }
     }
+
+    // Este utilizador não tem carteira
+    return -1;
+}
+
+// Função para devolver o índice da empresa X na carteira do utilizador
+DWORD getIndiceEmpresaCarteira(TCHAR* activeUser, TCHAR* nomeEmpresa, CarteiraAcoes* carteiras, DWORD numUtilizadores, DWORD numEmpresas, DWORD indCarteira) {
+
+    if (numEmpresas == 0)
+        return -1;
+
+    
+    for (DWORD i = 0; i < numEmpresas; i++) {
+        _tprintf_s(_T("ActiveUser: %s|nome empresa a encontrar: %s==%s"), activeUser, nomeEmpresa, carteiras[indCarteira].empresas[i].nome);
+        if (!_tcsicmp(nomeEmpresa, carteiras[indCarteira].empresas[i].nome)) {
+            return i;
+        }
+    }
+
+    // O utilizador não tem esta empresa na carteira
     return -1;
 }
 
@@ -671,6 +697,8 @@ DWORD getIndiceEmpresa(TCHAR* nome, Empresa* empresas, DWORD numEmpresas) {
             return i;
         }
     }
+
+    // Esta empresa não existe
     return -1;
 }
 

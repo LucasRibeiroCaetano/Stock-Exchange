@@ -87,6 +87,11 @@ typedef struct {
     struct MP mp;
 } DataAdmin;
 
+typedef struct {
+    Empresa* empresas;
+    DWORD numEmpresas;
+} DataListc;
+
 
 
 
