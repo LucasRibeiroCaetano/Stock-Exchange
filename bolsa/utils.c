@@ -486,8 +486,6 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 
         _stscanf_s(params[1], _T("%d"), &numAcoes);
 
-        _tprintf_s(_T("indCarteira: %d\nindEmpresa: %d\nindEmpresaCarteira: %d\nindUtilizador: %d\n"), indCarteira, indEmpresa, indEmpresaCarteira, indUtilizador);
-
         if (nParam == 2) {
             if (!_tcsicmp(activeUser, _T(""))) {
                 return _T("Login Obrigatório.");
@@ -557,6 +555,7 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 
         //Nome numAcoes
         DWORD numAcoes;
+        float disponibilidade;
         DWORD indCarteira = getIndiceCarteira(activeUser, carteiras, numUtilizadores);
 
         // Se indEmpresa == -1, esta empresa não existe
@@ -597,7 +596,9 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
                     return _T("Não tens ações suficientes.");
                 }
 
-                // Se tem ações da empresa, quer dizer que ela já existe
+                _tcscpy_s(ultimaTransacao.nome, STR_LEN, activeUser);
+                ultimaTransacao.num_acoes = numAcoes;
+                ultimaTransacao.preco_acao = empresas[indEmpresa].preco_acao;
 
                 // Adicionar as ações ao mercado
                 empresas[indEmpresa].num_acoes += numAcoes;
@@ -607,6 +608,10 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 
                 // Adicionar o dinheiro
                 utilizadores[indUtilizador].saldo += lucro;
+
+                disponibilidade = (float)numAcoes / empresas[indEmpresa].num_acoes; // Valor entre 0 e 1
+
+                empresas[indEmpresa].preco_acao -= disponibilidade * empresas[indEmpresa].preco_acao;
 
                 return _T("Venda bem sucedida.\n");
             }
