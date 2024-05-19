@@ -472,6 +472,7 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 
         //Nome numAcoes
         int numAcoes;
+        float disponibilidade;
         DWORD indCarteira = getIndiceCarteira(activeUser, carteiras, numUtilizadores);
 
         // Se indEmpresa == -1, esta empresa não existe
@@ -515,21 +516,18 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
 
                 empresas[indEmpresa].num_acoes -= numAcoes;
 
+                _tcscpy_s(ultimaTransacao.nome, STR_LEN, activeUser);
+                ultimaTransacao.num_acoes = numAcoes;
+                ultimaTransacao.preco_acao = empresas[indEmpresa].preco_acao;
 
                 // O utilizador não tem ações desta empresa na carteira, o índice é numEmpresas
                 if (indEmpresaCarteira == -1) {
 
                     indEmpresaCarteira = carteiras[indCarteira].numEmpresas;
-
-                    _tprintf_s(_T("indEmpresaCarteira: %d\n"), indEmpresaCarteira);
-
-                    _tprintf_s(_T("\nVou escrever no índice %d\n"), carteiras[indCarteira].numEmpresas);
                     _tcscpy_s(carteiras[indCarteira].empresas[indEmpresaCarteira].nome, STR_LEN, empresas[indEmpresa].nome);
                     carteiras[indCarteira].empresas[indEmpresaCarteira].num_acoes = numAcoes;
                     carteiras[indCarteira].empresas[indEmpresaCarteira].preco_acao = empresas[indEmpresa].preco_acao;
                     carteiras[indCarteira].numEmpresas++;
-
-                    _tprintf_s(_T("Fiquei com %d ações. nAcoes: %d"), carteiras[indCarteira].empresas[indEmpresaCarteira].num_acoes, numAcoes);
                 }
 
                 // O utilizador já tem ações desta empresa
@@ -540,6 +538,10 @@ TCHAR* executaComandos(TCHAR* linha, TCHAR* activeUser, DWORD numUtilizadores, D
                 }
 
                 utilizadores[indUtilizador].saldo -= custo;
+
+                disponibilidade = (float)numAcoes / empresas[indEmpresa].num_acoes; // Valor entre 0 e 1
+
+                empresas[indEmpresa].preco_acao += disponibilidade * empresas[indEmpresa].preco_acao;
 
                 return _T("Compra bem sucedida.\n");
             }
