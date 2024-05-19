@@ -70,6 +70,8 @@ typedef struct {
 
 // Dados para a thread dos comandos do admin
 typedef struct {
+
+    // Handles para os clientes
     HANDLE hPipes[MAX_USERS];
     HANDLE hThreads[MAX_USERS];
 
@@ -84,7 +86,12 @@ typedef struct {
     CarteiraAcoes* carteiras;
     DWORD numUtilizadores;
     struct MP mp;
+
+    // Handles
     HANDLE hSem;
+    HANDLE hClose; // Handle para o evento close
+    HANDLE hComandos;
+
     DataClientes dataClientes;
 } DataAdmin;
 

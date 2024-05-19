@@ -96,6 +96,7 @@ DWORD WINAPI ComandosThread(LPVOID lpParam) {
     _tprintf(_T("Escreva 'ajuda' para uma lista completa de comandos."));
 
     while (1) {
+
         _tprintf(_T("\n\nAdministrador> "));
 
         _fgetts(linhaAUX, STR_LEN, stdin);
@@ -310,7 +311,8 @@ DWORD WINAPI ComandosThread(LPVOID lpParam) {
 
             if (nParam == 0) {
                 _tprintf(_T("\nEncerrando o programa...\n\n"));
-                return 1;
+                SetEvent(dataAdmin->hClose);
+                return 0;
             }
             else
                 _tprintf(_T("\nNúmero de parâmetros inválido.\n"));
@@ -332,14 +334,34 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
     DWORD dwRead, dwWritten;
     TCHAR returnString[STR_LEN];
     DWORD id = dataAdmin->dataClientes.idPipe;
+    HANDLE hThread;
+    DWORD dwThreadId;
 
+    DWORD i = 0;
 
     // Lê as mensagens dos clientes
     while (true) {
 
+        // Check if hClose has finished, if it hasn't finished yet
+        DWORD dwWaitClose = WaitForSingleObject(dataAdmin->hClose, 0);
+
+        if (dwWaitClose == WAIT_OBJECT_0) {
+            // Sair do ciclo e encerrar o programa
+            return 0;
+        }
+        else if (dwWaitClose == WAIT_TIMEOUT);
+        else {
+            // Error occurred
+            Erro(_T("\nErro ao esperar pelo evento hClose\n"));
+        }
+
+        // O servidor bloqueia aqui porque está à espera que o cliente escreva alguma coisa
+        _tprintf_s(_T("Bloqueia antes do readFile"));
+        // Lê o comando do cliente       
         if (!ReadFile(dataAdmin->hPipes[id], buffer, sizeof(buffer), &dwRead, NULL) || dwRead == 0) {
             Abort(_T("Houve um erro na leitura de mensagens do cliente.\n"));
         }
+
         MensagemInfo(_T("Comando recebido: "));
         _tprintf_s(buffer);
 
@@ -369,7 +391,6 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
             else {
                 Erro(_T("Erro inesperado."));
             }
-
         }
 
         // Comando inválido, não vamos enviar para o servidor
@@ -377,6 +398,8 @@ DWORD WINAPI ClientesThread(LPVOID lpParam) {
             MensagemInfo(_T("Comando inválido recebido."));
         }
         else {
+
+            // Envia o resultado do comando enviado pelo cliente
             if (!WriteFile(dataAdmin->hPipes[id], returnString, (_tcslen(returnString) + 1) * sizeof(TCHAR), &dwWritten, NULL)) {
                 Abort(_T("WriteFile failed.\n"));
             }

@@ -49,6 +49,9 @@ int _tmain(int argc, TCHAR* argv[]) {
     DWORD nSegundos = 0; // Comando Pause
     DWORD pos = 0;
     DWORD dwWaitResult;
+    DWORD dwExitCodeClientes;
+    DWORD dwExitCodeAdmin;
+    DWORD dwWaitClose;
 
 
 
@@ -129,6 +132,14 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     eventos = CriarEventos();
 
+    dataAdmin.hClose = CreateEvent(NULL, TRUE, FALSE, _T("Close"));
+    if (dataAdmin.hClose == NULL) {
+        Abort(_T("Erro na Criação do evento do encerramento.\n"));
+    }
+
+
+
+
     //----------------------------------------------- MP -----------------------------------------------
     MP mp;
 
@@ -191,15 +202,33 @@ int _tmain(int argc, TCHAR* argv[]) {
     
 
     // Thread comandos bolsa
-    HANDLE hThreadComandos = CreateThread(NULL, 0, ComandosThread, &dataAdmin, 0, NULL);
-    if (hThreadComandos == NULL) {
+    dataAdmin.hComandos = CreateThread(NULL, 0, ComandosThread, &dataAdmin, 0, NULL);
+    if (dataAdmin.hComandos == NULL) {
         Abort(_T("Erro ao criar a thread do administrador."));
     }
 
     while (true) {
 
+        // Verificar se há ordem de close
+        dwWaitClose = WaitForSingleObject(dataAdmin.hClose, 0);
+
+        // Se houver ordem de close
+        if (dwWaitClose == WAIT_OBJECT_0) {
+            // Sair do ciclo e encerrar o programa
+
+            _tprintf_s(_T("\nOrdem de close.\n"));
+            break;
+        }
+        else if (dwWaitClose == WAIT_TIMEOUT);
+        else {
+            // Error occurred
+            Erro(_T("\nErro ao esperar pelo evento hClose\n"));
+        }
+
+        // Esperamos que haja um slot livre para um cliente
         dwWaitResult = WaitForSingleObject(dataAdmin.hSem, INFINITE);
 
+        // Temos um slot livre para um cliente
         if (dwWaitResult == WAIT_OBJECT_0) {
 
             // Criação do named pipe
@@ -213,11 +242,31 @@ int _tmain(int argc, TCHAR* argv[]) {
                 Abort(_T("ConnectNamedPipe failed.\n"));
             }
 
+            MensagemInfo(_T("Novo cliente conectado."));
+
+            
+
             pos = getPipe(dataAdmin.hPipes, dataAdmin.numPipes);
 
             dataAdmin.dataClientes.idPipe = pos;
 
             dataAdmin.hPipes[pos] = hPipe; // quando se desligar faço isto = NULL
+
+            // Verificar se há ordem de close
+            dwWaitClose = WaitForSingleObject(dataAdmin.hClose, 0);
+
+            // Se houver ordem de close
+            if (dwWaitClose == WAIT_OBJECT_0) {
+                // Sair do ciclo e encerrar o programa
+
+                _tprintf_s(_T("\nOrdem de close.\n"));
+                break;
+            }
+            else if (dwWaitClose == WAIT_TIMEOUT);
+            else {
+                // Error occurred
+                Erro(_T("\nErro ao esperar pelo evento hClose\n"));
+            }
 
             dataAdmin.hThreads[pos] = CreateThread(NULL, 0, ClientesThread, &dataAdmin, 0, NULL);
 
@@ -226,7 +275,21 @@ int _tmain(int argc, TCHAR* argv[]) {
                 Abort(_T("CreateThread failed.\n"));
             }
 
-            MensagemInfo(_T("Novo cliente conectado."));
+            // Ver se o return das threads é 0, se for 0 temos de sair do ciclo
+            if (!GetExitCodeThread(dataAdmin.hThreads[pos], &dwExitCodeClientes)) {
+                Abort(_T("Erro ao obter o código de saída da thread."));
+            }
+
+            if (!GetExitCodeThread(dataAdmin.hComandos, &dwExitCodeAdmin)) {
+                Abort(_T("Erro ao obter o código de saída da thread."));
+            }
+
+            if (dwExitCodeClientes == 0 && dwExitCodeAdmin == 0) {
+                _tprintf_s(_T("\nBreak\n"));
+                break;
+            }
+
+            
 
         }
         else {
@@ -235,13 +298,29 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
     //----------------------------------------------- Threads ------------------------------------------
 
-    
 
     // Libertar Recursos
     MensagemInfo(_T("A libertar recursos.\n"));
     UnmapViewOfFile(mp.pBuf);
     CloseHandle(mp.hMapFile);
     CloseHandle(eventos.hRead);
+
+    MensagemInfo(_T("A libertar pipes.\n"));
+    for (DWORD i = 0; i < dataAdmin.numPipes; i++) {
+        CloseHandle(dataAdmin.hPipes[i]);
+    }
+
+    MensagemInfo(_T("A libertar threads.\n"));
+    for (DWORD i = 0; i < dataAdmin.numPipes; i++) {
+        CloseHandle(dataAdmin.hThreads[i]);
+    }
+
+    MensagemInfo(_T("A libertar utilizadores.\n"));
+    for (DWORD i = 0; i < dataAdmin.numUtilizadores; i++) {
+        dataAdmin.utilizadores[i].online = false;
+        CloseHandle(dataAdmin.hPipes[i]);
+        dataAdmin.hPipes[i] = NULL;
+    }
     
     return 0;
 }

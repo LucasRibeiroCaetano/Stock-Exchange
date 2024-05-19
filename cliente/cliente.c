@@ -20,8 +20,10 @@ int main() {
     TCHAR resultado[STR_LEN];
     BOOL valido;
     TCHAR activeUser[STR_LEN];
+    DWORD dwWaitResult;
 
-    // Para validar as opera��es que precisam de login
+
+    // Para validar as operações que precisam de login
     DWORD loggedIn = false;
 
     DWORD stdinReturn;
@@ -29,6 +31,7 @@ int main() {
     DWORD stderrReturn;
 
     HANDLE hPipe;
+    HANDLE hClose;
 
 #ifdef UNICODE 
     stdinReturn = _setmode(_fileno(stdin), _O_WTEXT);
@@ -47,32 +50,65 @@ int main() {
         return 1;
     }
 
+    hClose = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("Close"));
+    if (hClose == NULL) {
+        Abort(_T("Erro ao abrir o evento close"));
+    }
+
     limparConsola();
 
-    // Interface de gest�o de comandos
+    // Interface de gestão de comandos
     _tprintf(_T("Escreva 'ajuda' para uma lista completa de comandos.\n"));
 
     // Ciclo de enviar comandos, copiar da bolsa
     while (1) {
 
+        dwWaitResult = WaitForSingleObject(hClose, 0);
+
+        if (dwWaitResult == WAIT_OBJECT_0) {
+
+            MensagemInfo(_T("A Encerrar\n"));
+            // Sair do ciclo e encerrar o programa
+            return 0;
+        }
+        else if (dwWaitResult == WAIT_TIMEOUT); // Não foi sinalizado, não vamos fazer nada
+        else {
+            // Error occurred
+            Erro(_T("\nErro ao esperar pelo evento hClose\n"));
+        }
+
         _tprintf(_T("Cliente> "));
+
+        dwWaitResult = WaitForSingleObject(hClose, 0);
+
+        if (dwWaitResult == WAIT_OBJECT_0) {
+
+            MensagemInfo(_T("A Encerrar\n"));
+            // Sair do ciclo e encerrar o programa
+            return 0;
+        }
+        else if (dwWaitResult == WAIT_TIMEOUT); // Não foi sinalizado, não vamos fazer nada
+        else {
+            // Error occurred
+            Erro(_T("\nErro ao esperar pelo evento hClose\n"));
+        }
 
         _fgetts(linhaAUX, STR_LEN, stdin);
 
-        // Obt�m o tamanho do comando
+        // Obtém o tamanho do comando
         size_t length = _tcslen(linhaAUX);
 
-        // Se o comando n�o estiver vazio truncar o \n
+        // Se o comando não estiver vazio truncar o \n
         if (length > 0 && linhaAUX[length - 1] == '\n') {
             linhaAUX[length - 1] = '\0';
         }
 
-        // linhaAUX ir� ser alterado nas fun��es ent�o copio o conte�do para outra vari�vel para guardar o input
+        // linhaAUX irá ser alterado nas funções então copio o conteúdo para outra variável para guardar o input
         _tcscpy_s(linha, STR_LEN, linhaAUX);
 
         nParam = contaParametros(linhaAUX);
 
-        // Repartir o comando e os par�metros
+        // Repartir o comando e os parâmetros
         extrairParametros(nParam, linhaAUX, comando, param);
 
         if (!_tcsicmp(comando, _T("ajuda"))) {
@@ -196,7 +232,7 @@ int main() {
                     _tprintf_s(_T("\n\n"));
                 }
                 else
-                    Erro(_T("N�mero de parâmetros inválido."));
+                    Erro(_T("Número de parâmetros inválido."));
             }
         }
         else if (!_tcsicmp(comando, _T("exit"))) {
@@ -209,12 +245,12 @@ int main() {
                 }
 
                 // Close pipe handle
-                MensagemInfo(_T("A Encerrar o cliente."));
+                MensagemInfo(_T("A Encerrar o cliente.\n"));
                 CloseHandle(hPipe);
                 return 0;
             }
             else
-                Erro(_T("N�mero de parâmetros inválido."));
+                Erro(_T("Número de parâmetros inválido."));
         }
         else {
             Erro(_T("Comando Inválido."));
