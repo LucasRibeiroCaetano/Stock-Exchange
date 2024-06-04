@@ -1,8 +1,4 @@
-# Practical Work - Operating Systems 2 (2023/24)
-
-This repository contains the programs developed for the Practical Work of the Operating Systems 2 course for the 2023/24 academic year.
-
-## Work Description
+## Project Description
 The project involves the implementation of an online stock exchange, where different processes interact to simulate stock transactions of companies. The involved programs are `bolsa`, `board` and `cliente`.
 
 ## Work Components
